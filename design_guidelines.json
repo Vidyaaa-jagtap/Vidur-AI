@@ -1,0 +1,93 @@
+{
+  "theme": "light",
+  "archetype": "Swiss & High-Contrast (Enterprise & Investor-Ready)",
+  "colors": {
+    "background": "bg-white",
+    "surface": "bg-slate-50",
+    "primary": "bg-slate-900",
+    "primary_text": "text-slate-900",
+    "accent": "bg-blue-600",
+    "accent_hover": "bg-blue-700",
+    "border": "border-slate-200",
+    "muted": "text-slate-500",
+    "card_background": "bg-white",
+    "success": "bg-emerald-100 text-emerald-800"
+  },
+  "typography": {
+    "headings": {
+      "font_family": "font-sans (Outfit or Cabinet Grotesk)",
+      "weights": "font-bold to font-black",
+      "h1": "text-5xl sm:text-6xl tracking-tighter leading-none text-slate-900",
+      "h2": "text-3xl sm:text-4xl tracking-tight leading-tight text-slate-900",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight text-slate-800",
+      "h4": "text-lg font-medium tracking-tight text-slate-800"
+    },
+    "body": {
+      "font_family": "font-sans (IBM Plex Sans)",
+      "base": "text-base leading-relaxed text-slate-600",
+      "small": "text-sm leading-relaxed text-slate-500"
+    },
+    "labels": "text-xs font-semibold tracking-[0.2em] uppercase text-slate-500"
+  },
+  "layouts": {
+    "marketing_pages": "Use large padding (py-24 to py-32). Asymmetrical bento grids for features. Hero section must use a 2-column layout or center-aligned with massive typography and a high-quality image.",
+    "dashboard": "High Density Grid. Strict grid hierarchy with dense and compact spacing. 1px borders.",
+    "business_model_canvas": "grid grid-cols-1 lg:grid-cols-10 gap-4. Key Partners (col-span-2 row-span-2), Key Activities (col-span-2), Key Resources (col-span-2), Value Propositions (col-span-2 row-span-2), Customer Relationships (col-span-2), Channels (col-span-2), Customer Segments (col-span-2 row-span-2), Cost Structure (col-span-5), Revenue Streams (col-span-5).",
+    "swot_analysis": "grid grid-cols-1 md:grid-cols-2 gap-4. 2x2 matrix.",
+    "roadmap": "Vertical timeline layout using a left border and relative positioning for markers."
+  },
+  "visual_enhancers": {
+    "surfaces": "Grid Borders: Expose the skeleton. Data-heavy sections should have 1px borders (border-slate-200) with no shadows to feel technical and precise. For sticky headers, use Glassmorphism (bg-white/70 backdrop-blur-xl border-b border-slate-200).",
+    "spacing": "Generous Spacing Philosophy. Use p-6, p-8, p-12 for containers. Use gap-8 to gap-12 for large grids, gap-4 to gap-6 for dense data.",
+    "borders": "Subtle roundness. max 8px border-radius (rounded-lg) for a sharp, professional look.",
+    "shadows": "Minimalist. Use shadow-sm for default cards, shadow-md on hover. No muddy or heavy drop shadows."
+  },
+  "component_instructions": {
+    "buttons": "Modern pill-shaped or rounded-lg with interaction animations. Primary CTA must use the primary brand color with text-white.",
+    "cards": "For marketing: Cardless or high-contrast border styles. For dashboard: Standard Shadcn UI Cards with custom padding (p-6) and subtle borders.",
+    "inputs": "Shadcn UI Input, Select, Textarea. Clean, rounded-md, with ring-offset-background and focus-visible:ring-2.",
+    "toasts": "Use Sonner for toasts."
+  },
+  "motion": {
+    "hover_states": "All interactive elements must explicitly set text color on hover. Use -translate-y-1 and shadow-lg for dashboard cards on hover.",
+    "transitions": "transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease (DO NOT use transition-all).",
+    "entrance": "Staggered fade-up for list items and dashboard sections."
+  },
+  "media": {
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1559223694-98ed5e272fef",
+        "description": "Startup founder pitching strategy on stage. Use in the Hero Section to establish authority.",
+        "category": "hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+        "description": "Person using a MacBook, typing. Use in the 'How It Works' section to show ease of generating.",
+        "category": "how_it_works"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1735352312589-945e0819f8ea",
+        "description": "Close up of paper and pen representing strategy. Use in the Features section for the 'Blueprint'.",
+        "category": "features"
+      }
+    ],
+    "icons": "Use lucide-react for all icons."
+  },
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 ratio for text. Buttons must have explicit hover text colors.",
+    "testing": "All interactive elements MUST include a data-testid attribute in kebab-case."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use default Inter for headings. Use Outfit.",
+    "No generic centered layouts for content—left-align dense content.",
+    "Create depth through layered design elements with z-index hierarchy and glassmorphism.",
+    "DO NOT apply universal transition (transition: all).",
+    "DO NOT center align the app container (.App { text-align: center; }).",
+    "DO NOT use complete transparent backgrounds in headers or overlays.",
+    "Use 2-3x more spacing than feels comfortable. Use Tailwind scale (p-8, p-12, etc.).",
+    "Images MUST NOT exceed 80vh on mobile devices.",
+    "Include data-testid on all interactive elements.",
+    "Use Sonner for toasts."
+  ],
+  "instructions_to_main_agent": "Vidur AI requires a 'Founder / Pitch-Deck' aesthetic. Keep the background clean white and rely on typography, layout density, and 1px borders to organize information. The Results Dashboard must present the generated content in a highly structured, card-based format resembling a professional consulting report. Use a responsive grid (Bento Grid style) for the 9 Output Sections (Problem, Objectives, Business Model Canvas, SWOT, Risk, Requirements, User Stories, Backlog, Roadmap). Specifically, map the Business Model Canvas into a 10-column grid that reflects the standard canvas layout. Include a 'Download PDF' button prominently."
+}
