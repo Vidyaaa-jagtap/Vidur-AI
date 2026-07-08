@@ -38,6 +38,10 @@ export default function Create() {
     startup_idea: "",
   });
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState("");
+  const pollRef = useRef(null);
+
+  useEffect(() => () => { if (pollRef.current) clearTimeout(pollRef.current); }, []);
 
   const update = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -51,6 +55,39 @@ export default function Create() {
     toast.success("Example loaded");
   };
 
+  const pollJob = (jobId, startedAt) => {
+    const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+    setProgress(`Synthesizing your blueprint… ${elapsed}s`);
+    pollRef.current = setTimeout(async () => {
+      try {
+        const job = await getBlueprintJob(jobId);
+        if (job.status === "done" && job.blueprint_id) {
+          setProgress("");
+          toast.success("Blueprint generated");
+          navigate(`/results/${job.blueprint_id}`);
+          return;
+        }
+        if (job.status === "error") {
+          setLoading(false);
+          setProgress("");
+          toast.error(job.error || "Generation failed. Try again.");
+          return;
+        }
+        if (Date.now() - startedAt > 180000) {
+          setLoading(false);
+          setProgress("");
+          toast.error("Generation timed out. Please try again.");
+          return;
+        }
+        pollJob(jobId, startedAt);
+      } catch (err) {
+        setLoading(false);
+        setProgress("");
+        toast.error("Lost connection to the generator. Please try again.");
+      }
+    }, 2500);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     if (!form.startup_name || !form.industry || !form.target_audience || form.startup_idea.length < 10) {
@@ -58,15 +95,15 @@ export default function Create() {
       return;
     }
     setLoading(true);
+    setProgress("Sending your idea to Vidur AI…");
     try {
-      const record = await createBlueprint(form);
-      toast.success("Blueprint generated");
-      navigate(`/results/${record.id}`);
+      const job = await startBlueprintJob(form);
+      pollJob(job.id, Date.now());
     } catch (err) {
-      const msg = err?.response?.data?.detail || "Generation failed. Try again.";
-      toast.error(msg);
-    } finally {
       setLoading(false);
+      setProgress("");
+      const msg = err?.response?.data?.detail || "Could not start generation. Try again.";
+      toast.error(msg);
     }
   };
 
