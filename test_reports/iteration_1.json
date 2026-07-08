@@ -1,0 +1,40 @@
+{
+  "summary": "Backend endpoints all functionally correct: GET /api/ (200), POST /api/blueprint/generate schema is complete with all 9 sections + 9 canvas keys + 4 SWOT keys and lists populated, validation returns 422 for <10-char idea, GET by id (200) and unknown (404), GET /api/blueprints returns summaries, PDF endpoint returns 200 application/pdf starting with %PDF-, unknown PDF returns 404. Frontend Home/Create/Results all render correctly, all 9 section-* data-testids visible on Results, download-pdf visible, example loader populates fields, empty-form validation shows message. HOWEVER, the Create -> generate flow FAILS end-to-end from the browser because the LLM call takes ~65-70s and the preview ingress proxy times out at 60s, returning 502 to the client. The backend actually completes and stores the blueprint, but the frontend never receives {id} so no redirect to /results/:id occurs, and no error toast is shown either.",
+  "tested_scope": ["frontend", "backend", "integration"],
+  "passed": [
+    "GET /api/ 200 {service:'Vidur AI', status:'ok'}",
+    "POST /api/blueprint/generate schema validated (all 9 top-level keys, canvas has 9 sub-keys, swot has 4 keys, risk_analysis/user_stories/product_backlog/development_roadmap/functional_requirements are non-empty lists)",
+    "POST /api/blueprint/generate with short idea -> 422",
+    "GET /api/blueprint/{id} -> 200 with full blueprint",
+    "GET /api/blueprint/{unknown} -> 404",
+    "GET /api/blueprints -> 200 list of summaries",
+    "GET /api/blueprint/{id}/pdf -> 200, application/pdf, 22KB, starts with %PDF-",
+    "GET /api/blueprint/{unknown}/pdf -> 404",
+    "Home page (/) renders data-testid=home-page and hero-cta-primary",
+    "Create page (/create) renders data-testid=create-page with all inputs",
+    "Empty-form submit shows validation message",
+    "Example loader (example-0) populates startup_name, startup_idea, target_audience",
+    "Results page (/results/:id) direct load renders all 9 sections (problem/objectives/canvas/swot/risk/requirements/stories/backlog/roadmap) and download-pdf button"
+  ],
+  "failed": [
+    {
+      "area": "integration (Create -> Results)",
+      "issue": "POST /api/blueprint/generate through the public preview URL returns 502 after 60s because the LLM call takes ~65-70s and exceeds the ingress proxy timeout. Backend still completes and persists the record, but the browser client never receives the response, so no redirect to /results/:id happens.",
+      "evidence": "curl -X POST https://blueprint-builder-89.preview.emergentagent.com/api/blueprint/generate -> HTTP 502 after 60.2s. Backend log later shows 'POST /api/blueprint/generate HTTP/1.1 200 OK' and record appears in GET /api/blueprints (count went 1 -> 2). Browser console during Create flow: 'Failed to load resource: 502'. No redirect within 90s.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "frontend Create error UX",
+      "issue": "When the generate request fails (e.g., the 502 above), the Create page shows no error toast/message; the user is left with a spinning/unresponsive form and no feedback.",
+      "evidence": "After the 502 was received, no 'error/failed/try again' text or toast appeared in the DOM for ~90s.",
+      "priority": "MEDIUM"
+    }
+  ],
+  "action_items": [
+    "Reduce LLM latency to well under 60s (e.g., lower max_tokens, tighter prompt, or use streaming) OR switch generate endpoint to async pattern: POST returns {job_id} immediately, frontend polls GET /api/blueprint/{id} or a job status endpoint until ready. This is required so the Create -> Results flow works through the preview proxy.",
+    "Add explicit error handling on Create page: catch non-2xx responses (including 502/timeout) and display a toast/inline error so users know generation failed."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "80%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

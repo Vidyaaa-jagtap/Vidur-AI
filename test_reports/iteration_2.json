@@ -1,0 +1,48 @@
+{
+  "summary": "Backend async job pattern is fully working end-to-end (POST /api/blueprint/jobs returns instantly, polling shows pending -> running -> done in ~75s, blueprint fetch and PDF work). However the Create.jsx frontend fix was NOT actually applied to the submit handler. The imports were updated to startBlueprintJob/getBlueprintJob but the submit() function still calls `createBlueprint(form)` which is undefined, and references an undefined `progress` variable. This throws a ReferenceError on submit, the catch shows only a generic 'Generation failed. Try again.' toast, and the user is stuck on /create with no navigation. Confirmed via ESLint (2 no-undef errors) and Playwright (submit did not enter loading state, URL stayed on /create). This is the SAME blocker as iteration_1 — the async job pattern was implemented on backend but not wired into the frontend submit.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Create.jsx submit()",
+        "issue": "ReferenceError: createBlueprint is not defined. Frontend still uses old sync helper name — never calls startBlueprintJob/getBlueprintJob. Also references undefined `progress` variable in JSX at line 185.",
+        "selector": "[data-testid=submit-blueprint]",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Create -> Results (async job polling)",
+        "issue": "Submit throws ReferenceError so no /api/blueprint/jobs POST is ever made; user sees generic error toast and stays on /create. Backend job endpoint verified working (75s completion) via curl and pytest.",
+        "affected_selectors": ["[data-testid=submit-blueprint]", "[data-testid=progress-label]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_blueprint_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "In /app/frontend/src/pages/Create.jsx submit(): replace `const record = await createBlueprint(form)` with the async job pattern — call `startBlueprintJob(form)` to get `{ id: jobId }`, then poll `getBlueprintJob(jobId)` every 2.5s (max 180s) until `status === 'done'`, then `navigate(\"/results/\" + job.blueprint_id)`. Handle status==='error' with toast. Update elapsed-seconds counter into a `progress` state variable used at line 185 (currently undefined).",
+    "Consider disabling `Generation typically takes 20-60 seconds.` copy since actual generation is ~70-85s; keep language honest (e.g., 'up to ~90 seconds')."
+  ],
+  "critical_code_review_comments": [
+    "Create.jsx has 2 ESLint no-undef errors (createBlueprint, progress) — the review request claimed the async pattern was implemented but only imports/api.js was updated; submit() was not refactored.",
+    "api.js axios timeout is 30000ms — for a synchronous fallback that would break; not an issue for the (correct) async job polling path since each poll is fast.",
+    "Old sync endpoint /api/blueprint/generate is retained for API completeness; fine, but consider a route-level warning log so we notice if UI regresses back to it."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_blueprint_api.py (new regression test file, 6 tests all passing)"
+  ],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "0% for the Create->Results integration flow (blocked by ReferenceError)"},
+  "test_credentials": "N/A - no auth in this app",
+  "seed_data_creation": "One TEST_PytestCo blueprint created via lifecycle test; low-risk residue.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend async job flow is fully green (pytest file: /app/backend/tests/test_blueprint_api.py, ~90s per lifecycle run). Only the Create.jsx submit() function needs fixing to complete E2E. Once fixed, re-run the Playwright flow: navigate to /create, click [data-testid=example-0] to autofill, click [data-testid=submit-blueprint], then poll page.url for /results/{id} with up to 180s timeout. Verify all 9 [data-testid^=section-] elements render and [data-testid=download-pdf] works.",
+  "rca of the issue": "Root cause: incomplete refactor of Create.jsx. The api.js helpers and imports were updated to startBlueprintJob/getBlueprintJob, and progress-label testid was added, but the submit() function body was left calling the removed createBlueprint(form) helper and a `progress` variable that is never declared as state. Result: on submit, JS throws ReferenceError, caught by the generic catch which shows 'Generation failed. Try again.' and setLoading(false) — user never sees loading state and never gets redirected. Reproduction: open /create in the preview URL, click example-0 to autofill, click Generate blueprint — nothing happens (URL stays /create). Mitigation: implement the polling logic in submit() as described in action_items #1."
+}
