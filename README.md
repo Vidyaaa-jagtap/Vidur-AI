@@ -1,427 +1,224 @@
 <div align="center">
 
-# 🧭 Vidur AI
+# Vidur AI — Business Analyst Copilot
 
-### From a paragraph of vision to an investor-ready startup blueprint — in under a minute.
+### Turn a startup idea into an investor-ready business blueprint.
 
-*Nine strategic sections. One coherent report. One click to PDF.*
-
-[![Stack](https://img.shields.io/badge/stack-React%20%2B%20FastAPI%20%2B%20MongoDB-0f172a?style=flat-square)](#-technology-stack)
-[![LLM](https://img.shields.io/badge/LLM-Claude%20Sonnet%204.6-2563eb?style=flat-square)](#-technology-stack)
-[![Migration-Ready](https://img.shields.io/badge/migration-IBM%20watsonx.ai%20Granite-054ada?style=flat-square)](#-future-ibm-granite-integration)
-[![License](https://img.shields.io/badge/license-MIT-emerald?style=flat-square)](#-license)
+**IBM watsonx.ai · Multi-agent architecture · 13 specialised business analysts**
 
 </div>
 
 ---
 
-## 📖 Project Overview
+## Overview
 
-**Vidur AI** is a full-stack AI web application that turns a raw startup idea into a structured, investor-ready **business blueprint**. Founders, consultants, and incubators describe an idea in a few sentences — Vidur AI returns a professionally organized nine-section report covering everything from the Business Model Canvas to a phased Development Roadmap, exportable as a polished PDF.
+Vidur AI is a full-stack GenAI web application that converts a raw startup idea into a **structured, investor-ready business blueprint**. It runs entirely on **IBM watsonx.ai** — no OpenAI, Anthropic, Gemini, or Emergent APIs — using a multi-agent orchestration pattern that avoids Watsonx token limits by having each of thirteen specialised agents own exactly one section of the report.
 
-The application was designed for **hackathons, startup incubators, and enterprise showcases**. The AI layer is intentionally decoupled behind a provider abstraction so the current LLM (Anthropic Claude Sonnet 4.6, via the Emergent Universal Key) can be swapped for **IBM watsonx.ai Granite** models with a single-file change.
+Built for the **IBM AICTE Edunet Internship Program**.
 
-**Named after Vidur** — the sage-strategist from the Mahabharata, revered for turning complex situations into clear, structured counsel.
+## Sections generated
 
----
+1. **Startup Viability Score** (0–100 with 5 sub-scores: market potential, product-market fit, execution feasibility, monetization strength, defensibility)
+2. **Problem Statement**
+3. **Business Objectives**
+4. **Market Opportunity Analysis** (TAM / SAM / SOM, growth rate, trends, drivers)
+5. **Competitive Landscape** (direct competitors, differentiators, moats)
+6. **Business Model Canvas** (9 blocks)
+7. **SWOT Analysis** (2×2 matrix)
+8. **Risk Analysis** (categorized, with impact × likelihood × mitigation)
+9. **Functional Requirements**
+10. **User Stories** (with acceptance criteria)
+11. **Product Backlog** (P0/P1/P2, effort-sized)
+12. **Development Roadmap** (phased with timelines)
+13. **AI Recommendations** (prioritized next actions)
+14. **Investor-Ready PDF Report**
 
-## ✨ Features
+## Technology stack
 
-- 🚀 **Idea → Blueprint in ~60–90 seconds** — a founder pastes a paragraph, Vidur AI synthesizes a full report.
-- 🧩 **Nine strategic sections**, every time:
-  1. Problem Statement
-  2. Business Objectives
-  3. Business Model Canvas (9 blocks)
-  4. SWOT Analysis (2×2 matrix)
-  5. Risk Analysis (impact × likelihood × mitigation)
-  6. Functional Requirements
-  7. User Stories (with acceptance criteria)
-  8. Product Backlog (prioritized, effort-sized)
-  9. Development Roadmap (phased with timelines)
-- 📄 **Server-side PDF export** — publisher-quality report generated with ReportLab, cover page included.
-- ⏱ **Async job pattern** — non-blocking generation with polling; survives ingress timeouts.
-- 🎨 **Founder / pitch-deck design aesthetic** — Outfit + IBM Plex Sans, slate-900 + blue-600, card-based dashboard, generous whitespace.
-- 🧠 **Provider-agnostic AI layer** — swap Claude for IBM Granite by editing one factory function.
-- 📱 **Responsive** — pitch-ready on desktop, functional on mobile.
-- 🧪 **Fully tested** — backend regression suite + frontend E2E via Playwright.
+- **Backend**: FastAPI (async), MongoDB (Motor), IBM watsonx.ai SDK, tenacity retries, ReportLab
+- **Frontend**: React 19, React Router, Tailwind CSS, shadcn/ui, lucide-react, sonner
+- **LLM**: `meta-llama/llama-3-3-70b-instruct` on **IBM watsonx.ai** (region: `eu-gb`, London)
+- **Async job pattern** so the UI never blocks on long inference
 
----
-
-## 🛠 Technology Stack
-
-| Layer            | Choice                                              | Why                                                                 |
-|------------------|-----------------------------------------------------|---------------------------------------------------------------------|
-| **Frontend**     | React 19, React Router 7, TailwindCSS, shadcn/ui    | Fast iteration; investor-grade component quality                    |
-| **Icons / Motion** | lucide-react, framer-motion                       | Consistent iconography, tasteful micro-interactions                 |
-| **Toasts**       | sonner                                              | Non-intrusive, accessible notifications                             |
-| **Backend**      | Python 3.11, FastAPI, Uvicorn                       | Async-first, type-safe API with automatic OpenAPI docs              |
-| **Database**     | MongoDB (Motor async driver)                        | Flexible schema for evolving blueprint structure                    |
-| **LLM**          | Anthropic **Claude Sonnet 4.6** via `emergentintegrations` (Emergent Universal Key) | Best-in-class reasoning for structured strategy output |
-| **PDF**          | ReportLab 5                                         | Precise, publication-quality server-side PDFs                       |
-| **Typography**   | Outfit (headings), IBM Plex Sans (body), JetBrains Mono (code) | Distinctive, editorial, "Swiss" aesthetic              |
-| **Testing**      | Pytest (backend), Playwright (frontend E2E)         | Deterministic regression coverage                                   |
-
----
-
-## 🏗 Architecture
+## Folder structure
 
 ```
-                     ┌─────────────────────────────────────────────┐
-                     │                  React SPA                  │
-                     │  Home  ·  Create  ·  Results dashboard      │
-                     └────────────────┬────────────────────────────┘
-                                      │  REACT_APP_BACKEND_URL
-                                      ▼
-                     ┌─────────────────────────────────────────────┐
-                     │              FastAPI (/api/*)               │
-                     │                                             │
-                     │  POST /blueprint/jobs   ──►  BackgroundTask │
-                     │  GET  /blueprint/jobs/:id (poll)            │
-                     │  GET  /blueprint/:id                        │
-                     │  GET  /blueprint/:id/pdf                    │
-                     └────────┬────────────────────┬───────────────┘
-                              │                    │
-                              ▼                    ▼
-             ┌──────────────────────┐   ┌──────────────────────┐
-             │   ai_service.py      │   │   pdf_service.py     │
-             │  ┌────────────────┐  │   │   ReportLab renderer │
-             │  │ Provider (ABC) │  │   │   9-section layout   │
-             │  ├────────────────┤  │   └──────────────────────┘
-             │  │  Emergent      │  │
-             │  │  Claude 4.6    │◄─┼───── EMERGENT_LLM_KEY
-             │  ├────────────────┤  │
-             │  │  ⟵ Granite     │  │
-             │  │    (future)    │  │
-             │  └────────────────┘  │
-             └──────────┬───────────┘
-                        ▼
-             ┌──────────────────────┐
-             │       MongoDB        │
-             │  blueprints          │
-             │  blueprint_jobs      │
-             └──────────────────────┘
-```
-
-**Why an async job pattern?** LLM generation takes ~60–90 seconds. Reverse proxies typically close idle HTTP requests around the 60-second mark. Vidur AI's frontend POSTs to `/api/blueprint/jobs`, gets a `job_id` instantly, then polls every 2.5s until the background task completes — a resilient, cloud-friendly pattern.
-
-### Repository layout
-
-```
-vidur-ai/
+/app
 ├── backend/
-│   ├── server.py            # FastAPI app + routes
-│   ├── ai_service.py        # Provider abstraction (Claude today, Granite tomorrow)
-│   ├── pdf_service.py       # ReportLab PDF renderer
+│   ├── .env                        # IBM Watsonx credentials + Mongo config
 │   ├── requirements.txt
-│   └── .env                 # MONGO_URL · DB_NAME · EMERGENT_LLM_KEY
+│   ├── server.py                   # FastAPI app + routes + background jobs
+│   ├── watsonx_client.py           # IBM watsonx.ai client (async wrapper + retries)
+│   ├── ai_service.py               # Multi-agent orchestrator
+│   ├── pdf_service.py              # ReportLab PDF renderer (13 sections)
+│   ├── json_utils.py               # Robust JSON extraction + repair
+│   └── agents/
+│       ├── __init__.py
+│       ├── base.py                 # BaseAgent (retry + validation)
+│       ├── problem.py
+│       ├── objectives.py
+│       ├── canvas.py
+│       ├── swot.py
+│       ├── risk.py
+│       ├── requirements.py
+│       ├── stories.py
+│       ├── backlog.py
+│       ├── roadmap.py
+│       ├── viability.py            # Startup viability scoring agent
+│       ├── market.py               # Market opportunity agent
+│       ├── competitive.py          # Competitive analysis agent
+│       └── recommendations.py      # AI recommendation engine
 ├── frontend/
-│   ├── src/
-│   │   ├── pages/           # Home · Create · Results
-│   │   ├── components/      # Navbar · Footer · shadcn/ui
-│   │   ├── lib/api.js       # startBlueprintJob · getBlueprintJob · pdfUrl
-│   │   ├── App.js
-│   │   ├── index.css        # fonts + design tokens
-│   │   └── index.js
+│   ├── .env                        # REACT_APP_BACKEND_URL
 │   ├── package.json
-│   └── .env                 # REACT_APP_BACKEND_URL
+│   ├── tailwind.config.js
+│   └── src/
+│       ├── index.js
+│       ├── index.css
+│       ├── App.js
+│       ├── App.css
+│       ├── lib/api.js
+│       ├── components/
+│       │   ├── Navbar.jsx
+│       │   ├── Footer.jsx
+│       │   └── ui/                 # shadcn/ui components
+│       └── pages/
+│           ├── Home.jsx
+│           ├── Create.jsx          # Multi-agent progress panel
+│           └── Results.jsx         # Viability hero + 13 sections
 ├── memory/
-│   └── PRD.md               # product spec + backlog
+│   └── PRD.md
 └── README.md
 ```
 
----
+## Environment variables
 
-## ⚙️ Installation Steps
-
-### Prerequisites
-
-- **Node.js ≥ 18** and **Yarn** (do *not* use `npm`)
-- **Python ≥ 3.11**
-- **MongoDB ≥ 6** (local or Atlas)
-- An **Emergent Universal Key** — obtain from your Emergent profile
-
-### 1. Clone
-
-```bash
-git clone https://github.com/your-org/vidur-ai.git
-cd vidur-ai
-```
-
-### 2. Backend
-
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-Create `backend/.env`:
+`/app/backend/.env`:
 
 ```env
 MONGO_URL="mongodb://localhost:27017"
-DB_NAME="vidur"
+DB_NAME="vidur_ai"
 CORS_ORIGINS="*"
-EMERGENT_LLM_KEY="sk-emergent-xxxxxxxxxxxxxxxx"
+WATSONX_API_KEY=""
+WATSONX_PROJECT_ID=""
+WATSONX_URL="https://eu-gb.ml.cloud.ibm.com"
+WATSONX_MODEL_ID="meta-llama/llama-3-3-70b-instruct"
 ```
 
-Run:
+Supported `WATSONX_MODEL_ID` values (any Watsonx-hosted text model):
 
-```bash
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-```
+- `meta-llama/llama-3-3-70b-instruct` (default, recommended)
+- `meta-llama/llama-4-maverick-17b-128e-instruct-fp8`
+- `mistralai/mistral-small-3-1-24b-instruct-2503`
+- (any other Watsonx text-generation model your project has access to)
 
-The API is now live at **http://localhost:8001/api**.
-
-### 3. Frontend
-
-```bash
-cd ../frontend
-yarn install
-```
-
-Create `frontend/.env`:
+`/app/frontend/.env`:
 
 ```env
 REACT_APP_BACKEND_URL=http://localhost:8001
 ```
 
-Run:
+## Installation & run
 
 ```bash
+# 1. Backend
+cd backend
+pip install -r requirements.txt
+
+# 2. Add IBM credentials to backend/.env:
+#    WATSONX_API_KEY=... ; WATSONX_PROJECT_ID=...
+
+# 3. Start MongoDB (e.g. Docker):
+docker run -d -p 27017:27017 mongo:6
+
+# 4. Start backend
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+
+# 5. Frontend (in a new terminal)
+cd ../frontend
+yarn install         # use yarn, not npm
 yarn start
+
+# 6. Open http://localhost:3000
 ```
 
-Open **http://localhost:3000** and generate your first blueprint 🚀
+## API endpoints
 
-### 4. Testing (optional)
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/` | Health + Watsonx metadata |
+| `POST` | `/api/blueprint/jobs` | Enqueue async generation — returns `{id, status:"pending", progress}` |
+| `GET` | `/api/blueprint/jobs/{job_id}` | Poll job. Includes `progress` map (section → status) |
+| `POST` | `/api/blueprint/generate` | Synchronous generation (long call) |
+| `GET` | `/api/blueprint/{id}` | Fetch a stored blueprint |
+| `GET` | `/api/blueprints` | Recent blueprints |
+| `GET` | `/api/blueprint/{id}/pdf` | Download PDF |
 
-```bash
-# Backend regression tests
-cd backend && pytest tests/
-
-# Frontend E2E (Playwright)
-cd ../frontend && yarn test
-```
-
----
-
-## 🔌 API Endpoints
-
-All endpoints are prefixed with `/api`.
-
-| Method | Endpoint                          | Description                                              |
-|--------|-----------------------------------|----------------------------------------------------------|
-| `GET`  | `/api/`                           | Health check → `{ "service": "Vidur AI", "status": "ok" }` |
-| `POST` | `/api/blueprint/jobs`             | **Enqueue** blueprint generation. Returns `{ id, status: "pending" }` immediately. |
-| `GET`  | `/api/blueprint/jobs/{job_id}`    | Poll a job. Returns `status` (`pending` → `running` → `done` \| `error`) and `blueprint_id` when done. |
-| `POST` | `/api/blueprint/generate`         | **Sync** generation (server-to-server callers). Blocks until the LLM completes. |
-| `GET`  | `/api/blueprint/{id}`             | Fetch a stored blueprint by ID.                          |
-| `GET`  | `/api/blueprints?limit=20`        | List recent blueprints (summary view).                   |
-| `GET`  | `/api/blueprint/{id}/pdf`         | Stream the PDF report (`Content-Type: application/pdf`). |
-
-### Example: end-to-end via curl
-
-```bash
-# 1. Kick off a job
-JOB=$(curl -s -X POST http://localhost:8001/api/blueprint/jobs \
-    -H "Content-Type: application/json" \
-    -d '{
-      "startup_name": "SprintDeck",
-      "industry": "SaaS",
-      "target_audience": "Early-stage startup founders",
-      "startup_idea": "An AI copilot that turns raw startup ideas into investor-ready blueprints in under a minute."
-    }')
-
-JOB_ID=$(echo "$JOB" | python3 -c "import sys,json;print(json.load(sys.stdin)['id'])")
-
-# 2. Poll until done
-while :; do
-  STATUS=$(curl -s http://localhost:8001/api/blueprint/jobs/$JOB_ID)
-  echo "$STATUS"
-  echo "$STATUS" | grep -q '"status":"done"' && break
-  sleep 3
-done
-
-# 3. Extract the blueprint_id and download the PDF
-BP_ID=$(echo "$STATUS" | python3 -c "import sys,json;print(json.load(sys.stdin)['blueprint_id'])")
-curl -o SprintDeck.pdf http://localhost:8001/api/blueprint/$BP_ID/pdf
-```
-
-### Request schema (`/api/blueprint/jobs`)
-
-```json
-{
-  "startup_name":     "string (1-120)",
-  "startup_idea":     "string (10-4000)",
-  "industry":         "string (1-120)",
-  "target_audience":  "string (1-400)"
-}
-```
-
-### Response schema (a completed blueprint)
-
-```json
-{
-  "id": "uuid",
-  "startup_name": "...",
-  "startup_idea": "...",
-  "industry": "...",
-  "target_audience": "...",
-  "blueprint": {
-    "problem_statement": "...",
-    "business_objectives": ["..."],
-    "business_model_canvas": {
-      "key_partners": ["..."], "key_activities": ["..."], "key_resources": ["..."],
-      "value_propositions": ["..."], "customer_relationships": ["..."], "channels": ["..."],
-      "customer_segments": ["..."], "cost_structure": ["..."], "revenue_streams": ["..."]
-    },
-    "swot_analysis": { "strengths": ["..."], "weaknesses": ["..."], "opportunities": ["..."], "threats": ["..."] },
-    "risk_analysis": [ { "risk": "...", "impact": "High|Medium|Low", "likelihood": "High|Medium|Low", "mitigation": "..." } ],
-    "functional_requirements": ["..."],
-    "user_stories": [ { "persona": "...", "story": "...", "acceptance_criteria": ["..."] } ],
-    "product_backlog": [ { "id": "VDR-1", "title": "...", "priority": "P0|P1|P2", "effort": "S|M|L|XL", "description": "..." } ],
-    "development_roadmap": [ { "phase": "Phase 1 - Discovery", "timeline": "Weeks 1-2", "milestones": ["..."] } ]
-  },
-  "created_at": "2026-02-08T18:43:48.970150Z"
-}
-```
-
----
-
-## 🔷 Future IBM Granite Integration
-
-The AI layer was designed from day one for a clean migration to **IBM watsonx.ai Granite** models. All prompt logic, parsing, and validation live in `ai_service.py` behind a provider abstraction:
-
-```python
-class _BlueprintProvider(ABC):
-    @abstractmethod
-    async def generate_blueprint(self, payload) -> dict: ...
-```
-
-**Nothing** in `server.py`, `pdf_service.py`, or the frontend depends on the underlying provider. To migrate, implement one new class and change one factory function:
-
-```python
-# backend/ai_service.py
-
-from ibm_watsonx_ai.foundation_models import ModelInference
-
-class GraniteBlueprintProvider(_BlueprintProvider):
-    def __init__(self, api_key: str, project_id: str,
-                 model_id: str = "ibm/granite-3-8b-instruct"):
-        self._model = ModelInference(
-            model_id=model_id,
-            credentials={"apikey": api_key, "url": "https://us-south.ml.cloud.ibm.com"},
-            project_id=project_id,
-        )
-
-    async def generate_blueprint(self, payload):
-        prompt = EmergentClaudeProvider._build_user_prompt(payload)
-        raw = self._model.generate_text(
-            prompt=f"{SYSTEM_PROMPT}\n\n{prompt}",
-            params={"max_new_tokens": 4096, "temperature": 0.4},
-        )
-        return EmergentClaudeProvider._parse_json(raw)
-
-
-def get_provider() -> _BlueprintProvider:
-    return GraniteBlueprintProvider(
-        api_key=os.environ["WATSONX_API_KEY"],
-        project_id=os.environ["WATSONX_PROJECT_ID"],
-    )
-```
-
-Add to `backend/.env`:
-
-```env
-WATSONX_API_KEY="..."
-WATSONX_PROJECT_ID="..."
-```
-
-That's the entire migration. The frontend, PDF layer, database, and API contracts are unaffected.
-
-**Why Granite?** IBM Granite models are enterprise-grade, transparent (open training data), and cost-efficient for structured business reasoning — ideal for regulated verticals, procurement-friendly deployments, and long-term IBM Cloud alignment.
-
----
-
-## 🖼 Screenshots
-
-> *Add screenshots to `/docs/screenshots/` and reference them here.*
-
-<div align="center">
-
-|                Home                |               Create               |              Results               |
-|:----------------------------------:|:----------------------------------:|:----------------------------------:|
-| ![Home](docs/screenshots/home.png) | ![Create](docs/screenshots/create.png) | ![Results](docs/screenshots/results.png) |
-
-</div>
-
-<div align="center">
-
-|          Business Model Canvas         |         SWOT Analysis         |             Exported PDF             |
-|:--------------------------------------:|:-----------------------------:|:------------------------------------:|
-| ![BMC](docs/screenshots/bmc.png) | ![SWOT](docs/screenshots/swot.png) | ![PDF](docs/screenshots/pdf.png) |
-
-</div>
-
----
-
-## 🛣 Roadmap
-
-- [x] MVP: Home + Create + Results + PDF export
-- [x] Async job pattern (survives long LLM calls)
-- [x] Provider abstraction (IBM Granite migration-ready)
-- [ ] User accounts + saved blueprint history (Emergent Google Auth)
-- [ ] Section-level "refine this" regeneration
-- [ ] Shareable public blueprint URLs (`vidur.ai/b/{id}`) with OG images
-- [ ] Notion / Google Docs / PPTX export
-- [ ] Cohort & team plans for accelerators
-- [ ] IBM watsonx.ai Granite provider swap
-
----
-
-## 🤝 Contributing
-
-1. Fork the repo and create a feature branch: `git checkout -b feat/your-feature`
-2. Backend changes: run `pytest` before submitting.
-3. Frontend changes: keep `data-testid` attributes on all interactive elements.
-4. Do **not** introduce `npm` — this project uses `yarn` exclusively.
-5. Open a PR with a clear description and screenshots for UI changes.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for full details.
+## Architecture — multi-agent, token-limit-aware
 
 ```
-MIT License
-
-Copyright (c) 2026 Vidur AI
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+                 ┌────────────────────────────────┐
+                 │   React SPA (async polling)    │
+                 └────────────────┬───────────────┘
+                                  │
+                 ┌────────────────▼───────────────┐
+                 │       FastAPI /api/*           │
+                 │   Background job + progress    │
+                 └────────────────┬───────────────┘
+                                  │
+                 ┌────────────────▼───────────────┐
+                 │       ai_service.py            │
+                 │  asyncio.gather(13 agents,     │
+                 │  Semaphore(4) concurrency)     │
+                 └──┬───────┬────────┬────────┬───┘
+                    │       │        │        │
+       Problem  Objectives  Canvas  SWOT  Risk  Requirements
+       Stories  Backlog  Roadmap  Viability  Market  Competitive
+                                                       Recommendations
+                    │       │        │        │
+                    ▼       ▼        ▼        ▼
+                 ┌────────────────────────────────┐
+                 │     IBM watsonx.ai (eu-gb)     │
+                 │   Llama-3.3-70B-Instruct       │
+                 └────────────────────────────────┘
+                                  │
+                                  ▼
+                 ┌────────────────────────────────┐
+                 │           MongoDB              │
+                 │  blueprints · blueprint_jobs   │
+                 └────────────────────────────────┘
 ```
 
----
+### Why 13 agents instead of one prompt?
 
-<div align="center">
+- **Token limits**: Watsonx models have per-request output token caps. Splitting into 13 focused prompts keeps every response comfortably under the cap.
+- **Reliability**: Each agent validates its own JSON schema and self-repairs on failure (up to 2 automatic retries).
+- **Speed**: Agents run with `asyncio.gather` (bounded by a semaphore of 4) → total wall time ≈ single agent × 4, not × 13.
+- **Extensibility**: Adding a new section = one new agent file. No mega-prompt to rewrite.
 
-**Built for founders. Designed for investors. Ready for IBM.**
+### JSON validation & repair pipeline
 
-*If Vidur AI helps you land your next round — tell us. We love a good origin story.*
+Every LLM response is passed through `json_utils.parse_json`, which:
 
-</div>
+1. Strips markdown fences (` ```json ... ``` `).
+2. Extracts the outermost balanced `{…}` block (auto-closes if the model truncated).
+3. Removes trailing commas.
+4. Falls back to `json.loads` variants.
+
+If parsing still fails, the agent retries the prompt with a targeted error hint, up to two more times.
+
+## IBM Evaluation Criteria — how Vidur AI scores
+
+| Criterion | How Vidur AI addresses it |
+|-----------|---------------------------|
+| **IBM Cloud Platform usage** | Sole LLM provider is IBM watsonx.ai. Region-configurable (defaults to `eu-gb`). Uses official `ibm-watsonx-ai` SDK. |
+| **Scalability** | Stateless FastAPI + Motor async Mongo. Bounded-concurrency agent orchestration. Background jobs so ingress timeouts don't matter. Ready to deploy behind IBM Code Engine or OpenShift. |
+| **Innovation** | Multi-agent Business Analyst Copilot with a proprietary viability score, market sizing (TAM/SAM/SOM), competitive teardown, and an AI recommendation engine — all backed by IBM Watsonx. |
+| **Social Impact** | Democratizes strategic-consulting-grade output for first-time and non-technical founders in India, Africa, and other emerging ecosystems — replaces $5k–$50k consulting engagements with a free tool. |
+| **Deployment Readiness** | Single `.env` for credentials, no hardcoded secrets, MongoDB via env var, `pip install` + `yarn install` and run. Docker-friendly. |
+| **Commercial Viability** | Freemium: 1 blueprint free, paid tiers for saved history, team plans, and accelerator cohort licensing. |
+| **Future Scope** | Section-level "refine this" regeneration · Shareable public blueprint URLs · Notion/PPTX export · Watsonx.data grounding on live market data · Multi-language support · Founder-persona voice tuning. |
+
+## License
+
+MIT

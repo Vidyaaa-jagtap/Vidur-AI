@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowRight, Loader2, Sparkles, Target, Users, Building2, Lightbulb } from "lucide-react";
+import {
+  ArrowRight, Loader2, Sparkles, Target, Users, Building2, Lightbulb, CheckCircle2, Circle, XCircle,
+} from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -11,7 +13,7 @@ import { startBlueprintJob, getBlueprintJob } from "../lib/api";
 const INDUSTRIES = [
   "SaaS", "Fintech", "Healthtech", "Edtech", "E-commerce",
   "AI / ML", "Climate & Sustainability", "Marketplace", "Consumer Mobile",
-  "Developer Tools", "Cybersecurity", "Other",
+  "Developer Tools", "Cybersecurity", "AgriTech", "Other",
 ];
 
 const EXAMPLES = [
@@ -19,7 +21,7 @@ const EXAMPLES = [
     name: "SprintDeck",
     industry: "SaaS",
     audience: "Early-stage startup founders and product managers",
-    idea: "An AI copilot that turns raw startup ideas into investor-ready blueprints — canvas, SWOT, roadmap and backlog — in under a minute.",
+    idea: "An AI copilot that turns raw startup ideas into investor-ready blueprints — canvas, SWOT, viability score, roadmap and backlog — in under a minute.",
   },
   {
     name: "GreenRoute",
@@ -27,7 +29,38 @@ const EXAMPLES = [
     audience: "SMB logistics operators in emerging markets",
     idea: "A route optimization platform that reduces last-mile emissions by 30% using real-time traffic and carbon-aware routing.",
   },
+  {
+    name: "KrishiSetu",
+    industry: "AgriTech",
+    audience: "Small farmers and rural cooperatives in India",
+    idea: "A mobile-first marketplace connecting smallholder farmers directly to wholesale buyers, with AI-powered price forecasts and micro-credit access.",
+  },
 ];
+
+const SECTION_LABELS = {
+  problem_statement: "Problem Statement",
+  business_objectives: "Business Objectives",
+  business_model_canvas: "Business Model Canvas",
+  swot_analysis: "SWOT Analysis",
+  risk_analysis: "Risk Analysis",
+  functional_requirements: "Functional Requirements",
+  user_stories: "User Stories",
+  product_backlog: "Product Backlog",
+  development_roadmap: "Development Roadmap",
+  viability_score: "Viability Score",
+  market_analysis: "Market Analysis",
+  competitive_analysis: "Competitive Analysis",
+  ai_recommendations: "AI Recommendations",
+};
+
+const SECTION_ORDER = Object.keys(SECTION_LABELS);
+
+function StatusIcon({ status }) {
+  if (status === "done") return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+  if (status === "running") return <Loader2 className="h-4 w-4 animate-spin text-blue-600" />;
+  if (status === "error") return <XCircle className="h-4 w-4 text-red-600" />;
+  return <Circle className="h-4 w-4 text-slate-300" />;
+}
 
 export default function Create() {
   const navigate = useNavigate();
@@ -38,10 +71,15 @@ export default function Create() {
     startup_idea: "",
   });
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState("");
+  const [progress, setProgress] = useState({});   // section -> status
+  const [elapsed, setElapsed] = useState(0);
   const pollRef = useRef(null);
+  const tickerRef = useRef(null);
 
-  useEffect(() => () => { if (pollRef.current) clearTimeout(pollRef.current); }, []);
+  useEffect(() => () => {
+    if (pollRef.current) clearTimeout(pollRef.current);
+    if (tickerRef.current) clearInterval(tickerRef.current);
+  }, []);
 
   const update = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
@@ -56,33 +94,32 @@ export default function Create() {
   };
 
   const pollJob = (jobId, startedAt) => {
-    const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-    setProgress(`Synthesizing your blueprint… ${elapsed}s`);
     pollRef.current = setTimeout(async () => {
       try {
         const job = await getBlueprintJob(jobId);
+        setProgress(job.progress || {});
         if (job.status === "done" && job.blueprint_id) {
-          setProgress("");
-          toast.success("Blueprint generated");
+          toast.success("Blueprint ready");
+          if (tickerRef.current) clearInterval(tickerRef.current);
           navigate(`/results/${job.blueprint_id}`);
           return;
         }
         if (job.status === "error") {
           setLoading(false);
-          setProgress("");
+          if (tickerRef.current) clearInterval(tickerRef.current);
           toast.error(job.error || "Generation failed. Try again.");
           return;
         }
-        if (Date.now() - startedAt > 180000) {
+        if (Date.now() - startedAt > 240000) {
           setLoading(false);
-          setProgress("");
+          if (tickerRef.current) clearInterval(tickerRef.current);
           toast.error("Generation timed out. Please try again.");
           return;
         }
         pollJob(jobId, startedAt);
-      } catch (err) {
+      } catch (e) {
         setLoading(false);
-        setProgress("");
+        if (tickerRef.current) clearInterval(tickerRef.current);
         toast.error("Lost connection to the generator. Please try again.");
       }
     }, 2500);
@@ -95,17 +132,25 @@ export default function Create() {
       return;
     }
     setLoading(true);
-    setProgress("Sending your idea to Vidur AI…");
+    setElapsed(0);
+    const initialProgress = Object.fromEntries(SECTION_ORDER.map(k => [k, "pending"]));
+    setProgress(initialProgress);
+    const start = Date.now();
+    tickerRef.current = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
     try {
       const job = await startBlueprintJob(form);
-      pollJob(job.id, Date.now());
+      pollJob(job.id, start);
     } catch (err) {
       setLoading(false);
-      setProgress("");
+      if (tickerRef.current) clearInterval(tickerRef.current);
       const msg = err?.response?.data?.detail || "Could not start generation. Try again.";
       toast.error(msg);
     }
   };
+
+  const doneCount = Object.values(progress).filter(s => s === "done").length;
+  const totalCount = SECTION_ORDER.length;
+  const pct = Math.round((doneCount / totalCount) * 100);
 
   return (
     <main data-testid="create-page" className="bg-white">
@@ -117,8 +162,8 @@ export default function Create() {
               Tell us about your startup.
             </h1>
             <p className="mt-4 text-slate-600">
-              The more specific your inputs, the sharper the blueprint. Vidur AI
-              reads context — industry norms, target audience, and idea nuance.
+              The more specific your inputs, the sharper the blueprint.
+              Vidur AI orchestrates 13 IBM watsonx.ai agents to build your report.
             </p>
 
             <div className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
@@ -202,7 +247,7 @@ export default function Create() {
               />
             </FieldRow>
 
-            <FieldRow icon={Sparkles} label="Startup Idea" hint="A short paragraph is ideal (2-4 sentences)">
+            <FieldRow icon={Sparkles} label="Startup Idea" hint="A short paragraph is ideal (2–4 sentences)">
               <Textarea
                 data-testid="input-startup-idea"
                 value={form.startup_idea}
@@ -219,7 +264,9 @@ export default function Create() {
 
             <div className="mt-10 flex flex-col items-start gap-3 border-t border-slate-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
               <div data-testid="progress-label" className="text-sm text-slate-500">
-                {loading ? progress || "Working…" : "Generation typically takes 20–60 seconds."}
+                {loading
+                  ? `IBM watsonx.ai agents working… ${doneCount}/${totalCount} sections · ${elapsed}s`
+                  : "13 agents will run in parallel. Typical time: 60–120 seconds."}
               </div>
               <Button
                 type="submit"
@@ -230,7 +277,7 @@ export default function Create() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating blueprint…
+                    Generating…
                   </>
                 ) : (
                   <>
@@ -240,6 +287,35 @@ export default function Create() {
                 )}
               </Button>
             </div>
+
+            {loading && (
+              <div data-testid="progress-panel" className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
+                <div className="mb-3 flex items-baseline justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+                    Agent status
+                  </div>
+                  <div className="font-mono-alt text-sm text-slate-500">{pct}%</div>
+                </div>
+                <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-blue-600 transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <ul className="grid grid-cols-1 gap-1.5 md:grid-cols-2">
+                  {SECTION_ORDER.map((key) => (
+                    <li
+                      key={key}
+                      data-testid={`agent-${key}`}
+                      className="flex items-center gap-2 text-sm text-slate-700"
+                    >
+                      <StatusIcon status={progress[key]} />
+                      <span>{SECTION_LABELS[key]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </form>
       </div>

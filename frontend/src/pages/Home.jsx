@@ -1,17 +1,22 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Compass, FileText, Layers, Rocket, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import {
+  ArrowRight, Compass, FileText, Layers, Rocket,
+  ShieldCheck, Sparkles, Zap, LineChart, Users, Award,
+} from "lucide-react";
 import { Button } from "../components/ui/button";
 
 const FEATURES = [
-  { icon: Compass, title: "Business Model Canvas", body: "A complete 9-block canvas that maps your value chain from partners to revenue streams." },
-  { icon: ShieldCheck, title: "SWOT & Risk Analysis", body: "Investor-grade SWOT plus a ranked risk register with mitigation for every threat." },
-  { icon: Layers, title: "Requirements & Backlog", body: "Functional requirements, prioritized backlog and user stories ready for your first sprint." },
-  { icon: Rocket, title: "Development Roadmap", body: "Phased milestones with realistic timelines — from discovery to go-to-market." },
+  { icon: LineChart, title: "Startup Viability Score", body: "Investor-grade 0–100 score across market potential, PMF, execution, monetization and defensibility." },
+  { icon: Compass, title: "Business Model Canvas", body: "A complete 9-block canvas mapping partners, value, channels and revenue." },
+  { icon: ShieldCheck, title: "SWOT + Risk Register", body: "SWOT matrix plus a ranked risk register with impact, likelihood and mitigation." },
+  { icon: Users, title: "Market & Competitive Insight", body: "TAM/SAM/SOM sizing, growth drivers, and a direct-competitor teardown." },
+  { icon: Layers, title: "Requirements & Backlog", body: "Functional requirements, prioritized backlog and user stories with acceptance criteria." },
+  { icon: Rocket, title: "Roadmap & AI Actions", body: "Phased development plan plus a ranked list of next actions from the AI recommendation engine." },
 ];
 
 const STEPS = [
-  { n: "01", title: "Describe your idea", body: "Share the startup name, industry, target audience and the core idea in your own words." },
-  { n: "02", title: "AI drafts your blueprint", body: "Vidur AI synthesizes nine strategic sections tuned to your context in under a minute." },
+  { n: "01", title: "Describe your idea", body: "Share the startup name, industry, target audience and the idea in your own words." },
+  { n: "02", title: "13 IBM Watsonx agents synthesize", body: "Specialised agents each own one section — the blueprint assembles in under two minutes." },
   { n: "03", title: "Export & pitch", body: "Review the dashboard, then download a polished PDF report for investors and your team." },
 ];
 
@@ -26,7 +31,7 @@ export default function Home() {
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1">
               <Sparkles className="h-3.5 w-3.5 text-blue-600" />
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
-                Founder / Pitch-Deck Ready
+                Powered by IBM watsonx.ai
               </span>
             </div>
             <h1 className="font-display text-5xl font-black leading-[1.02] tracking-tighter text-slate-900 sm:text-6xl lg:text-7xl">
@@ -37,9 +42,10 @@ export default function Home() {
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">
-              Vidur AI converts a paragraph of vision into a nine-section business
-              blueprint — canvas, SWOT, risks, roadmap and more. Built for founders,
-              consultants and incubators who move fast.
+              Vidur AI is a multi-agent Business Analyst Copilot built on
+              <b> IBM watsonx.ai (Llama-3.3-70B)</b>. It converts a paragraph
+              of vision into a 13-section business blueprint — canvas, SWOT,
+              risks, roadmap, viability score and more.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link to="/create">
@@ -61,8 +67,8 @@ export default function Home() {
             </div>
 
             <div className="mt-14 grid grid-cols-3 gap-6 border-t border-slate-200 pt-8">
-              <Stat value="9" label="Strategic sections" />
-              <Stat value="< 60s" label="Time to blueprint" />
+              <Stat value="13" label="AI agents" />
+              <Stat value="0–100" label="Viability score" />
               <Stat value="PDF" label="Investor export" />
             </div>
           </div>
@@ -80,15 +86,14 @@ export default function Home() {
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:block">
                 <div className="eyebrow">Section preview</div>
                 <div className="mt-1 font-display text-base font-semibold text-slate-900">
-                  Business Model Canvas
+                  Viability Score
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-1">
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-6 rounded-sm border border-slate-200 bg-slate-50"
-                    />
-                  ))}
+                <div className="mt-2 flex items-baseline gap-1">
+                  <div className="font-display text-4xl font-black text-blue-600">87</div>
+                  <div className="text-xs font-semibold text-slate-400">/100</div>
+                </div>
+                <div className="mt-1 text-xs text-slate-500">
+                  Strong PMF · Defensible moat · High market growth
                 </div>
               </div>
             </div>
@@ -102,15 +107,15 @@ export default function Home() {
           <div className="max-w-3xl">
             <div className="eyebrow">What you get</div>
             <h2 className="mt-3 font-display text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              Nine strategic sections. One coherent blueprint.
+              Thirteen strategic sections. One coherent blueprint.
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              Every generation includes the frameworks investors expect — from the
-              Business Model Canvas to a phased development roadmap.
+              Every generation includes the frameworks investors expect — plus
+              a proprietary viability score and next-action recommendations.
             </p>
           </div>
 
-          <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
@@ -140,8 +145,9 @@ export default function Home() {
               Three steps from idea to boardroom.
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              We do the heavy strategy lift — you refine, edit and present. Every
-              output is structured, editable and export-ready.
+              Vidur AI orchestrates 13 specialised agents on IBM watsonx.ai —
+              each responsible for one section — then aggregates them into a
+              single investor-ready report.
             </p>
             <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
               <img
@@ -181,6 +187,27 @@ export default function Home() {
                   <Zap className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* IBM BAND */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
+          <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <Award className="h-8 w-8 text-blue-600" />
+              <div>
+                <div className="eyebrow">Built for the IBM AICTE Edunet Internship</div>
+                <div className="mt-1 font-display text-2xl font-bold text-slate-900">
+                  100% IBM watsonx.ai · Llama-3.3-70B · London region
+                </div>
+              </div>
+            </div>
+            <div className="text-sm text-slate-500 max-w-md">
+              Cloud-native, scalable, deployable. No third-party LLMs.
+              Every inference call runs on IBM Cloud.
             </div>
           </div>
         </div>

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  Download, ArrowLeft, Loader2, AlertTriangle,
-  ShieldCheck, Target, Layers, ListChecks, Users2, ClipboardList, Route, Building2,
+  Download, ArrowLeft, Loader2, AlertTriangle, ShieldCheck, Target, Layers,
+  ListChecks, Users2, ClipboardList, Route, Building2, LineChart, TrendingUp, Trophy, Lightbulb,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { fetchBlueprint, pdfUrl } from "../lib/api";
@@ -53,6 +53,7 @@ export default function Results() {
   }
 
   const bp = record.blueprint || {};
+  const vs = bp.viability_score || {};
 
   return (
     <main data-testid="results-page" className="bg-white">
@@ -68,7 +69,7 @@ export default function Results() {
           </Link>
           <div className="mt-6 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <div className="eyebrow">Vidur AI · Startup Blueprint</div>
+              <div className="eyebrow">Vidur AI · IBM watsonx.ai · Startup Blueprint</div>
               <h1 className="mt-3 font-display text-4xl font-black tracking-tighter text-slate-900 sm:text-6xl">
                 {record.startup_name}
               </h1>
@@ -90,6 +91,15 @@ export default function Results() {
         </div>
       </section>
 
+      {/* Viability hero */}
+      {vs.overall !== undefined && (
+        <section data-testid="section-viability" className="border-b border-slate-200 bg-slate-50">
+          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
+            <ViabilityHero vs={vs} />
+          </div>
+        </section>
+      )}
+
       {/* Report body */}
       <section className="bg-slate-50">
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 lg:px-10 lg:py-20">
@@ -99,6 +109,14 @@ export default function Results() {
 
           <Section icon={ListChecks} title="Business Objectives" testid="section-objectives">
             <BulletList items={bp.business_objectives} />
+          </Section>
+
+          <Section icon={TrendingUp} title="Market Opportunity Analysis" testid="section-market">
+            <MarketBlock market={bp.market_analysis || {}} />
+          </Section>
+
+          <Section icon={Trophy} title="Competitive Landscape" testid="section-competitive">
+            <CompetitiveBlock ca={bp.competitive_analysis || {}} />
           </Section>
 
           <Section icon={Building2} title="Business Model Canvas" testid="section-canvas">
@@ -141,6 +159,10 @@ export default function Results() {
 
           <Section icon={Route} title="Development Roadmap" testid="section-roadmap">
             <Roadmap phases={bp.development_roadmap || []} />
+          </Section>
+
+          <Section icon={Lightbulb} title="AI Recommendations — Next Actions" testid="section-recommendations">
+            <Recommendations recs={bp.ai_recommendations || []} />
           </Section>
 
           <div className="mt-4 flex justify-end">
@@ -195,6 +217,145 @@ function BulletList({ items }) {
     </ul>
   );
 }
+
+/* ---------- Viability ---------- */
+
+function scoreColor(score) {
+  if (score >= 75) return "text-emerald-600";
+  if (score >= 55) return "text-blue-600";
+  if (score >= 40) return "text-amber-600";
+  return "text-red-600";
+}
+function scoreBar(score) {
+  if (score >= 75) return "bg-emerald-500";
+  if (score >= 55) return "bg-blue-600";
+  if (score >= 40) return "bg-amber-500";
+  return "bg-red-500";
+}
+
+function ViabilityHero({ vs }) {
+  const subs = [
+    ["Market Potential", vs.market_potential],
+    ["Product-Market Fit", vs.product_market_fit],
+    ["Execution Feasibility", vs.execution_feasibility],
+    ["Monetization Strength", vs.monetization_strength],
+    ["Defensibility", vs.defensibility],
+  ];
+  return (
+    <div className="grid grid-cols-1 gap-8 rounded-xl border border-slate-200 bg-white p-8 lg:grid-cols-12">
+      <div className="lg:col-span-5">
+        <div className="eyebrow flex items-center gap-2">
+          <LineChart className="h-3.5 w-3.5" /> Startup Viability Score
+        </div>
+        <div className="mt-3 flex items-baseline gap-2">
+          <div data-testid="viability-overall" className={`font-display text-7xl font-black tracking-tighter ${scoreColor(vs.overall)}`}>
+            {vs.overall}
+          </div>
+          <div className="text-lg font-semibold text-slate-400">/100</div>
+        </div>
+        <div className="mt-3 font-display text-xl font-semibold text-slate-900">{vs.verdict}</div>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">{vs.rationale}</p>
+      </div>
+      <div className="space-y-3 lg:col-span-7">
+        {subs.map(([label, s]) => (
+          <div key={label}>
+            <div className="mb-1 flex items-center justify-between text-sm">
+              <span className="font-medium text-slate-700">{label}</span>
+              <span className={`font-mono-alt font-semibold ${scoreColor(s)}`}>{s}</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className={`h-full rounded-full ${scoreBar(s)}`} style={{ width: `${s}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Market ---------- */
+
+function MarketBlock({ market }) {
+  const cells = [
+    ["TAM", market.tam],
+    ["SAM", market.sam],
+    ["SOM (3yr)", market.som],
+  ];
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {cells.map(([label, val]) => (
+          <div key={label} className="rounded-md border border-slate-200 bg-slate-50 p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-600">{label}</div>
+            <div className="mt-1 text-sm text-slate-800">{val || "—"}</div>
+          </div>
+        ))}
+      </div>
+      {market.growth_rate && (
+        <div className="mt-4 rounded-md border border-slate-200 bg-white p-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Growth rate</span>
+          <span className="ml-2 text-sm text-slate-800">{market.growth_rate}</span>
+        </div>
+      )}
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Trends</div>
+          <BulletList items={market.trends} />
+        </div>
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Growth drivers</div>
+          <BulletList items={market.growth_drivers} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Competitive ---------- */
+
+function CompetitiveBlock({ ca }) {
+  const comps = ca.direct_competitors || [];
+  return (
+    <div className="space-y-6">
+      {comps.length ? (
+        <div className="overflow-hidden rounded-md border border-slate-200">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-900 text-white">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Competitor</th>
+                <th className="px-4 py-3 font-semibold">Strength</th>
+                <th className="px-4 py-3 font-semibold">Weakness</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {comps.map((c, i) => (
+                <tr key={i} className="align-top">
+                  <td className="px-4 py-3 font-medium text-slate-900">{c.name}</td>
+                  <td className="px-4 py-3 text-slate-700">{c.strength}</td>
+                  <td className="px-4 py-3 text-slate-700">{c.weakness}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      {ca.differentiators?.length ? (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">How we win</div>
+          <BulletList items={ca.differentiators} />
+        </div>
+      ) : null}
+      {ca.moats?.length ? (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Long-term moats</div>
+          <BulletList items={ca.moats} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- Canvas ---------- */
 
 const CANVAS_META = [
   { key: "key_partners", label: "Key Partners", span: "lg:col-span-2 lg:row-span-2" },
@@ -265,6 +426,7 @@ function RiskTable({ risks }) {
         <thead className="bg-slate-900 text-white">
           <tr>
             <th className="px-4 py-3 font-semibold">Risk</th>
+            <th className="px-4 py-3 font-semibold">Category</th>
             <th className="px-4 py-3 font-semibold">Impact</th>
             <th className="px-4 py-3 font-semibold">Likelihood</th>
             <th className="px-4 py-3 font-semibold">Mitigation</th>
@@ -274,6 +436,7 @@ function RiskTable({ risks }) {
           {risks.map((r, i) => (
             <tr key={i} className="align-top">
               <td className="px-4 py-3 font-medium text-slate-900">{r.risk}</td>
+              <td className="px-4 py-3 text-slate-700">{r.category}</td>
               <td className="px-4 py-3">
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${levelClass(r.impact)}`}>{r.impact}</span>
               </td>
@@ -344,6 +507,26 @@ function Roadmap({ phases }) {
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
             {(p.milestones || []).map((m, j) => <li key={j}>{m}</li>)}
           </ul>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Recommendations({ recs }) {
+  if (!recs.length) return <p className="text-sm text-slate-500">No recommendations yet.</p>;
+  return (
+    <ol className="space-y-3">
+      {recs.map((r, i) => (
+        <li key={i} className="flex items-start gap-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <span className={`mt-0.5 inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded-full px-2 text-xs font-bold ${priorityClass(r.priority)}`}>
+            {r.priority}
+          </span>
+          <div>
+            <div className="font-display text-base font-semibold text-slate-900">{r.action}</div>
+            <div className="mt-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{r.timeline}</div>
+            <p className="mt-1 text-sm text-slate-600">{r.rationale}</p>
+          </div>
         </li>
       ))}
     </ol>

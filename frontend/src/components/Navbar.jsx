@@ -18,7 +18,7 @@ export default function Navbar() {
           </div>
           <div className="leading-none">
             <div className="font-display text-lg font-bold tracking-tight text-slate-900">Vidur AI</div>
-            <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Startup Blueprint Engine</div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">IBM watsonx.ai · Business Analyst Copilot</div>
           </div>
         </Link>
 

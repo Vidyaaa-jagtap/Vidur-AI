@@ -1,13 +1,22 @@
-"""Vidur AI — FastAPI backend."""
+"""Vidur AI — FastAPI backend (IBM watsonx.ai edition).
+
+Endpoints:
+  GET  /api/                              health
+  POST /api/blueprint/jobs                enqueue generation (async)
+  GET  /api/blueprint/jobs/{job_id}       poll job status + progress
+  POST /api/blueprint/generate            synchronous (server-to-server)
+  GET  /api/blueprint/{id}                fetch blueprint
+  GET  /api/blueprints                    list recent blueprints
+  GET  /api/blueprint/{id}/pdf            download PDF report
+"""
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, BackgroundTasks, FastAPI, HTTPException
@@ -19,8 +28,9 @@ from starlette.middleware.cors import CORSMiddleware
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-# These imports depend on env vars being loaded first.
+# Env-dependent imports must come after load_dotenv.
 from ai_service import generate_blueprint  # noqa: E402
+from agents import ALL_AGENTS  # noqa: E402
 from pdf_service import build_pdf  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -45,7 +55,7 @@ logger = logging.getLogger("vidur")
 # App
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Vidur AI")
+app = FastAPI(title="Vidur AI (IBM watsonx.ai)")
 api_router = APIRouter(prefix="/api")
 
 
@@ -81,13 +91,16 @@ class BlueprintSummary(BaseModel):
 
 
 class BlueprintJob(BaseModel):
-    """Async generation job so we don't hit the 60s ingress timeout."""
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     status: str = "pending"  # pending | running | done | error
     blueprint_id: Optional[str] = None
     error: Optional[str] = None
+    progress: Dict[str, str] = Field(default_factory=dict)  # section_key -> status
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+ALL_SECTION_KEYS: List[str] = [a.key for a in ALL_AGENTS]
 
 
 # ---------------------------------------------------------------------------
@@ -95,10 +108,20 @@ class BlueprintJob(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-async def _run_generation(job_id: str, payload: dict) -> None:
-    await db.blueprint_jobs.update_one({"id": job_id}, {"$set": {"status": "running"}})
+async def _run_generation(job_id: str, payload: Dict[str, Any]) -> None:
+    initial_progress = {k: "pending" for k in ALL_SECTION_KEYS}
+    await db.blueprint_jobs.update_one(
+        {"id": job_id},
+        {"$set": {"status": "running", "progress": initial_progress}},
+    )
+
+    async def on_progress(section: str, status: str) -> None:
+        await db.blueprint_jobs.update_one(
+            {"id": job_id}, {"$set": {f"progress.{section}": status}}
+        )
+
     try:
-        blueprint = await generate_blueprint(payload)
+        blueprint = await generate_blueprint(payload, on_progress=on_progress)
         record = BlueprintRecord(**payload, blueprint=blueprint)
         doc = record.model_dump()
         doc["created_at"] = doc["created_at"].isoformat()
@@ -115,7 +138,6 @@ async def _run_generation(job_id: str, payload: dict) -> None:
         )
 
 
-
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -123,23 +145,24 @@ async def _run_generation(job_id: str, payload: dict) -> None:
 
 @api_router.get("/")
 async def root():
-    return {"service": "Vidur AI", "status": "ok"}
+    return {
+        "service": "Vidur AI",
+        "status": "ok",
+        "llm_provider": "IBM watsonx.ai",
+        "region": os.environ.get("WATSONX_URL", ""),
+        "model": os.environ.get("WATSONX_MODEL_ID", "meta-llama/llama-3-3-70b-instruct"),
+        "sections": ALL_SECTION_KEYS,
+    }
 
 
 @api_router.post("/blueprint/generate", response_model=BlueprintRecord)
 async def create_blueprint(payload: BlueprintInput):
-    """Synchronous generation. Kept for API completeness / server-to-server callers.
-
-    UI clients should use /blueprint/jobs to avoid the 60s ingress timeout.
-    """
-    logger.info("Generating blueprint (sync) for %s", payload.startup_name)
+    logger.info("Sync generation for %s", payload.startup_name)
     try:
         blueprint = await generate_blueprint(payload.model_dump())
-    except ValueError as exc:
-        raise HTTPException(status_code=502, detail=f"AI response error: {exc}") from exc
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Blueprint generation failed")
-        raise HTTPException(status_code=500, detail="Failed to generate blueprint.") from exc
+        logger.exception("Sync generation failed")
+        raise HTTPException(status_code=502, detail=f"Watsonx error: {exc}") from exc
 
     record = BlueprintRecord(**payload.model_dump(), blueprint=blueprint)
     doc = record.model_dump()
@@ -150,8 +173,7 @@ async def create_blueprint(payload: BlueprintInput):
 
 @api_router.post("/blueprint/jobs", response_model=BlueprintJob)
 async def start_blueprint_job(payload: BlueprintInput, background_tasks: BackgroundTasks):
-    """Kick off async blueprint generation and return a job id immediately."""
-    job = BlueprintJob()
+    job = BlueprintJob(progress={k: "pending" for k in ALL_SECTION_KEYS})
     doc = job.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.blueprint_jobs.insert_one(doc)
@@ -167,6 +189,7 @@ async def get_blueprint_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found.")
     if isinstance(doc.get("created_at"), str):
         doc["created_at"] = datetime.fromisoformat(doc["created_at"])
+    doc.setdefault("progress", {})
     return BlueprintJob(**doc)
 
 
@@ -183,8 +206,7 @@ async def get_blueprint(blueprint_id: str):
 @api_router.get("/blueprints", response_model=List[BlueprintSummary])
 async def list_blueprints(limit: int = 20):
     cursor = db.blueprints.find(
-        {},
-        {"_id": 0, "id": 1, "startup_name": 1, "industry": 1, "created_at": 1},
+        {}, {"_id": 0, "id": 1, "startup_name": 1, "industry": 1, "created_at": 1},
     ).sort("created_at", -1).limit(limit)
     items = await cursor.to_list(length=limit)
     for it in items:
@@ -198,7 +220,6 @@ async def download_pdf(blueprint_id: str):
     doc = await db.blueprints.find_one({"id": blueprint_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Blueprint not found.")
-
     meta = {
         "startup_name": doc["startup_name"],
         "startup_idea": doc["startup_idea"],
@@ -207,7 +228,7 @@ async def download_pdf(blueprint_id: str):
     }
     pdf_bytes = build_pdf(doc["blueprint"], meta)
     safe = "".join(c for c in doc["startup_name"] if c.isalnum() or c in ("-", "_")) or "blueprint"
-    filename = f"Vidur-AI-{safe}.pdf"
+    filename = f"VidurAI-{safe}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

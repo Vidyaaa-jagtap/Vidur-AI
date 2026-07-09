@@ -8,11 +8,13 @@ export const api = axios.create({
   timeout: 30000,
 });
 
+/** Kick off async generation. Returns { id, status, progress } instantly. */
 export async function startBlueprintJob(payload) {
   const { data } = await api.post("/blueprint/jobs", payload);
-  return data; // { id, status, blueprint_id?, error? }
+  return data;
 }
 
+/** Poll job. Returns { id, status, blueprint_id?, progress, error? }. */
 export async function getBlueprintJob(jobId) {
   const { data } = await api.get(`/blueprint/jobs/${jobId}`);
   return data;
@@ -25,4 +27,9 @@ export async function fetchBlueprint(id) {
 
 export function pdfUrl(id) {
   return `${API}/blueprint/${id}/pdf`;
+}
+
+export async function fetchHealth() {
+  const { data } = await api.get("/");
+  return data;
 }
