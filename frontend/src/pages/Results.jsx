@@ -47,8 +47,8 @@ export default function Results() {
   if (!record) {
     return (
       <main data-testid="results-loading" className="mx-auto flex max-w-3xl items-center gap-3 px-6 py-24 lg:px-10">
-        <Loader2 className="h-5 w-5 animate-spin text-slate-500" />
-        <span className="text-slate-600">Loading blueprint…</span>
+        <Loader2 className="h-5 w-5 animate-spin text-neutral-500" />
+        <span className="text-neutral-400">Loading blueprint…</span>
       </main>
     );
   }
@@ -57,34 +57,34 @@ export default function Results() {
   const vs = bp.viability_score || {};
 
   return (
-    <main data-testid="results-page" className="bg-white">
+    <main data-testid="results-page" className="bg-neutral-950">
       {/* Report header */}
-      <section className="border-b border-slate-200 bg-white">
+      <section className="border-b border-neutral-800 bg-neutral-950">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10 lg:py-16">
           <Link
             to="/create"
             data-testid="back-link"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900"
+            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-neutral-50"
           >
             <ArrowLeft className="h-4 w-4" /> New blueprint
           </Link>
           <div className="mt-6 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
               <div className="eyebrow">Vidur AI · IBM watsonx.ai · Startup Blueprint</div>
-              <h1 className="mt-3 font-display text-4xl font-black tracking-tighter text-slate-900 sm:text-6xl">
+              <h1 className="mt-3 font-display text-4xl font-black tracking-tighter text-neutral-50 sm:text-6xl">
                 {record.startup_name}
               </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
                 <Tag>{record.industry}</Tag>
                 <span>·</span>
-                <span>Target: <span className="text-slate-700">{record.target_audience}</span></span>
+                <span>Target: <span className="text-neutral-300">{record.target_audience}</span></span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Link to={`/copilot/${id}`}>
                 <Button
                   data-testid="open-copilot"
-                  className="h-11 rounded-full border border-slate-300 bg-white px-5 text-slate-900 shadow-sm hover:bg-slate-50"
+                  className="h-11 rounded-full border border-neutral-800 bg-neutral-950 px-5 text-neutral-50 shadow-sm hover:bg-neutral-900"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Ask Copilot
                 </Button>
@@ -92,19 +92,19 @@ export default function Results() {
               <Button
                 onClick={download}
                 data-testid="download-pdf"
-                className="h-11 rounded-full bg-slate-900 px-6 text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800"
+                className="h-11 rounded-full bg-neutral-950 px-6 text-white shadow-lg shadow-slate-900/20 hover:brightness-110"
               >
                 <Download className="mr-2 h-4 w-4" /> Download PDF
               </Button>
             </div>
           </div>
-          <p className="mt-6 max-w-3xl text-slate-600">{record.startup_idea}</p>
+          <p className="mt-6 max-w-3xl text-neutral-400">{record.startup_idea}</p>
         </div>
       </section>
 
       {/* Executive Summary */}
       {bp.executive_summary && (
-        <section data-testid="section-executive" className="border-b border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50/40">
+        <section data-testid="section-executive" className="border-b border-neutral-900 bg-gradient-to-br from-neutral-950 via-black to-amber-500/[0.03]">
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
             <ExecutiveSummary es={bp.executive_summary} />
           </div>
@@ -113,7 +113,7 @@ export default function Results() {
 
       {/* Viability hero */}
       {vs.overall !== undefined && (
-        <section data-testid="section-viability" className="border-b border-slate-200 bg-slate-50">
+        <section data-testid="section-viability" className="border-b border-neutral-800 bg-neutral-900">
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
             <ViabilityHero vs={vs} />
           </div>
@@ -121,10 +121,10 @@ export default function Results() {
       )}
 
       {/* Report body */}
-      <section className="bg-slate-50">
+      <section className="bg-neutral-900">
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-16 lg:px-10 lg:py-20">
           <Section icon={Target} title="Problem Statement" testid="section-problem">
-            <p className="text-base leading-relaxed text-slate-700">{bp.problem_statement}</p>
+            <p className="text-base leading-relaxed text-neutral-300">{bp.problem_statement}</p>
           </Section>
 
           <Section icon={ListChecks} title="Business Objectives" testid="section-objectives">
@@ -158,13 +158,13 @@ export default function Results() {
           <Section icon={Users2} title="User Stories" testid="section-stories">
             <div className="space-y-4">
               {(bp.user_stories || []).map((us, i) => (
-                <div key={i} className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+                <div key={i} className="rounded-md border border-neutral-800 bg-neutral-900 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
                     {us.persona}
                   </div>
-                  <div className="mt-1 font-display text-base font-medium text-slate-900">{us.story}</div>
+                  <div className="mt-1 font-display text-base font-medium text-neutral-50">{us.story}</div>
                   {us.acceptance_criteria?.length ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-400">
                       {us.acceptance_criteria.map((a, j) => <li key={j}>{a}</li>)}
                     </ul>
                   ) : null}
@@ -189,7 +189,7 @@ export default function Results() {
             <Link to={`/copilot/${id}`}>
               <Button
                 data-testid="open-copilot-bottom"
-                className="h-11 rounded-full border border-slate-300 bg-white px-5 text-slate-900 shadow-sm hover:bg-slate-50"
+                className="h-11 rounded-full border border-neutral-800 bg-neutral-950 px-5 text-neutral-50 shadow-sm hover:bg-neutral-900"
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Ask the Copilot
               </Button>
@@ -197,7 +197,7 @@ export default function Results() {
             <Button
               onClick={download}
               data-testid="download-pdf-bottom"
-              className="h-11 rounded-full bg-blue-600 px-6 text-white shadow-md shadow-blue-600/20 hover:bg-blue-700"
+              className="h-11 rounded-full bg-amber-500 px-6 text-white shadow-md shadow-amber-500/20 hover:bg-amber-600"
             >
               <Download className="mr-2 h-4 w-4" /> Download Full PDF
             </Button>
@@ -212,7 +212,7 @@ export default function Results() {
 
 function Tag({ children }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+    <span className="inline-flex items-center rounded-full border border-neutral-800 bg-neutral-950 px-2.5 py-0.5 text-xs font-semibold text-neutral-300">
       {children}
     </span>
   );
@@ -220,12 +220,12 @@ function Tag({ children }) {
 
 function Section({ icon: Icon, title, children, testid }) {
   return (
-    <article data-testid={testid} className="rounded-xl border border-slate-200 bg-white p-6 lg:p-8">
-      <header className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-900 text-white">
+    <article data-testid={testid} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 lg:p-8">
+      <header className="mb-5 flex items-center gap-3 border-b border-neutral-900 pb-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-950 text-white">
           <Icon className="h-4 w-4" />
         </div>
-        <h2 className="font-display text-2xl font-bold tracking-tight text-slate-900">{title}</h2>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-neutral-50">{title}</h2>
       </header>
       {children}
     </article>
@@ -233,13 +233,13 @@ function Section({ icon: Icon, title, children, testid }) {
 }
 
 function BulletList({ items }) {
-  if (!items?.length) return <p className="text-sm text-slate-500">No data.</p>;
+  if (!items?.length) return <p className="text-sm text-neutral-500">No data.</p>;
   return (
     <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
       {items.map((t, i) => (
-        <li key={i} className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-          <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
-          <span className="text-sm leading-relaxed text-slate-700">{t}</span>
+        <li key={i} className="flex items-start gap-3 rounded-md border border-neutral-800 bg-neutral-900 p-3">
+          <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+          <span className="text-sm leading-relaxed text-neutral-300">{t}</span>
         </li>
       ))}
     </ul>
@@ -251,18 +251,18 @@ function BulletList({ items }) {
 function ExecutiveSummary({ es }) {
   const metrics = es.key_metrics || [];
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+    <div className="rounded-2xl border border-neutral-800 bg-neutral-950/80 p-8 shadow-sm backdrop-blur">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <div className="lg:col-span-8">
           <div className="eyebrow flex items-center gap-2">
             <ScrollText className="h-3.5 w-3.5" /> Executive Summary
           </div>
-          <h2 className="mt-3 font-display text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
+          <h2 className="mt-3 font-display text-2xl font-bold leading-snug text-neutral-50 sm:text-3xl">
             {es.headline}
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-slate-700">{es.thesis}</p>
+          <p className="mt-4 text-base leading-relaxed text-neutral-300">{es.thesis}</p>
           {es.call_to_action && (
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-300">
               <Lightbulb className="h-3.5 w-3.5" /> {es.call_to_action}
             </div>
           )}
@@ -270,9 +270,9 @@ function ExecutiveSummary({ es }) {
         <div className="lg:col-span-4">
           <div className="grid grid-cols-2 gap-3">
             {metrics.slice(0, 6).map((m, i) => (
-              <div key={i} className="rounded-lg border border-slate-200 bg-white p-3">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-600">{m.label}</div>
-                <div className="mt-1 font-display text-lg font-bold text-slate-900">{m.value}</div>
+              <div key={i} className="rounded-lg border border-neutral-800 bg-neutral-950 p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">{m.label}</div>
+                <div className="mt-1 font-display text-lg font-bold text-neutral-50">{m.value}</div>
               </div>
             ))}
           </div>
@@ -286,13 +286,13 @@ function ExecutiveSummary({ es }) {
 
 function scoreColor(score) {
   if (score >= 75) return "text-emerald-600";
-  if (score >= 55) return "text-blue-600";
+  if (score >= 55) return "text-amber-400";
   if (score >= 40) return "text-amber-600";
   return "text-red-600";
 }
 function scoreBar(score) {
   if (score >= 75) return "bg-emerald-500";
-  if (score >= 55) return "bg-blue-600";
+  if (score >= 55) return "bg-amber-500";
   if (score >= 40) return "bg-amber-500";
   return "bg-red-500";
 }
@@ -306,7 +306,7 @@ function ViabilityHero({ vs }) {
     ["Defensibility", vs.defensibility],
   ];
   return (
-    <div className="grid grid-cols-1 gap-8 rounded-xl border border-slate-200 bg-white p-8 lg:grid-cols-12">
+    <div className="grid grid-cols-1 gap-8 rounded-xl border border-neutral-800 bg-neutral-950 p-8 lg:grid-cols-12">
       <div className="lg:col-span-5">
         <div className="eyebrow flex items-center gap-2">
           <LineChart className="h-3.5 w-3.5" /> Startup Viability Score
@@ -315,19 +315,19 @@ function ViabilityHero({ vs }) {
           <div data-testid="viability-overall" className={`font-display text-7xl font-black tracking-tighter ${scoreColor(vs.overall)}`}>
             {vs.overall}
           </div>
-          <div className="text-lg font-semibold text-slate-400">/100</div>
+          <div className="text-lg font-semibold text-neutral-600">/100</div>
         </div>
-        <div className="mt-3 font-display text-xl font-semibold text-slate-900">{vs.verdict}</div>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">{vs.rationale}</p>
+        <div className="mt-3 font-display text-xl font-semibold text-neutral-50">{vs.verdict}</div>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-400">{vs.rationale}</p>
       </div>
       <div className="space-y-3 lg:col-span-7">
         {subs.map(([label, s]) => (
           <div key={label}>
             <div className="mb-1 flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-700">{label}</span>
+              <span className="font-medium text-neutral-300">{label}</span>
               <span className={`font-mono-alt font-semibold ${scoreColor(s)}`}>{s}</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-800">
               <div className={`h-full rounded-full ${scoreBar(s)}`} style={{ width: `${s}%` }} />
             </div>
           </div>
@@ -349,25 +349,25 @@ function MarketBlock({ market }) {
     <div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {cells.map(([label, val]) => (
-          <div key={label} className="rounded-md border border-slate-200 bg-slate-50 p-4">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-600">{label}</div>
-            <div className="mt-1 text-sm text-slate-800">{val || "—"}</div>
+          <div key={label} className="rounded-md border border-neutral-800 bg-neutral-900 p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-400">{label}</div>
+            <div className="mt-1 text-sm text-neutral-100">{val || "—"}</div>
           </div>
         ))}
       </div>
       {market.growth_rate && (
-        <div className="mt-4 rounded-md border border-slate-200 bg-white p-3">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Growth rate</span>
-          <span className="ml-2 text-sm text-slate-800">{market.growth_rate}</span>
+        <div className="mt-4 rounded-md border border-neutral-800 bg-neutral-950 p-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Growth rate</span>
+          <span className="ml-2 text-sm text-neutral-100">{market.growth_rate}</span>
         </div>
       )}
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Trends</div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Trends</div>
           <BulletList items={market.trends} />
         </div>
         <div>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Growth drivers</div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Growth drivers</div>
           <BulletList items={market.growth_drivers} />
         </div>
       </div>
@@ -382,9 +382,9 @@ function CompetitiveBlock({ ca }) {
   return (
     <div className="space-y-6">
       {comps.length ? (
-        <div className="overflow-hidden rounded-md border border-slate-200">
+        <div className="overflow-hidden rounded-md border border-neutral-800">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900 text-white">
+            <thead className="bg-neutral-950 text-white">
               <tr>
                 <th className="px-4 py-3 font-semibold">Competitor</th>
                 <th className="px-4 py-3 font-semibold">Strength</th>
@@ -394,9 +394,9 @@ function CompetitiveBlock({ ca }) {
             <tbody className="divide-y divide-slate-100">
               {comps.map((c, i) => (
                 <tr key={i} className="align-top">
-                  <td className="px-4 py-3 font-medium text-slate-900">{c.name}</td>
-                  <td className="px-4 py-3 text-slate-700">{c.strength}</td>
-                  <td className="px-4 py-3 text-slate-700">{c.weakness}</td>
+                  <td className="px-4 py-3 font-medium text-neutral-50">{c.name}</td>
+                  <td className="px-4 py-3 text-neutral-300">{c.strength}</td>
+                  <td className="px-4 py-3 text-neutral-300">{c.weakness}</td>
                 </tr>
               ))}
             </tbody>
@@ -405,13 +405,13 @@ function CompetitiveBlock({ ca }) {
       ) : null}
       {ca.differentiators?.length ? (
         <div>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">How we win</div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">How we win</div>
           <BulletList items={ca.differentiators} />
         </div>
       ) : null}
       {ca.moats?.length ? (
         <div>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Long-term moats</div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">Long-term moats</div>
           <BulletList items={ca.moats} />
         </div>
       ) : null}
@@ -437,11 +437,11 @@ function CanvasGrid({ canvas }) {
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-10">
       {CANVAS_META.map((c) => (
-        <div key={c.key} className={`rounded-md border border-slate-200 bg-slate-50 p-4 ${c.span}`}>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-600">{c.label}</div>
+        <div key={c.key} className={`rounded-md border border-neutral-800 bg-neutral-900 p-4 ${c.span}`}>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-400">{c.label}</div>
           <ul className="mt-2 space-y-1.5">
             {(canvas[c.key] || []).map((t, i) => (
-              <li key={i} className="text-sm leading-snug text-slate-700">• {t}</li>
+              <li key={i} className="text-sm leading-snug text-neutral-300">• {t}</li>
             ))}
           </ul>
         </div>
@@ -453,7 +453,7 @@ function CanvasGrid({ canvas }) {
 const SWOT_META = [
   { key: "strengths", label: "Strengths", color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
   { key: "weaknesses", label: "Weaknesses", color: "text-red-700 bg-red-50 border-red-200" },
-  { key: "opportunities", label: "Opportunities", color: "text-blue-700 bg-blue-50 border-blue-200" },
+  { key: "opportunities", label: "Opportunities", color: "text-amber-300 bg-amber-500/10 border-amber-500/30" },
   { key: "threats", label: "Threats", color: "text-amber-700 bg-amber-50 border-amber-200" },
 ];
 
@@ -479,15 +479,15 @@ function levelClass(level) {
   if (l === "high") return "bg-red-100 text-red-800";
   if (l === "medium") return "bg-amber-100 text-amber-800";
   if (l === "low") return "bg-emerald-100 text-emerald-800";
-  return "bg-slate-100 text-slate-700";
+  return "bg-neutral-800 text-neutral-300";
 }
 
 function RiskTable({ risks }) {
-  if (!risks.length) return <p className="text-sm text-slate-500">No risks identified.</p>;
+  if (!risks.length) return <p className="text-sm text-neutral-500">No risks identified.</p>;
   return (
-    <div className="overflow-hidden rounded-md border border-slate-200">
+    <div className="overflow-hidden rounded-md border border-neutral-800">
       <table className="w-full text-left text-sm">
-        <thead className="bg-slate-900 text-white">
+        <thead className="bg-neutral-950 text-white">
           <tr>
             <th className="px-4 py-3 font-semibold">Risk</th>
             <th className="px-4 py-3 font-semibold">Category</th>
@@ -499,15 +499,15 @@ function RiskTable({ risks }) {
         <tbody className="divide-y divide-slate-100">
           {risks.map((r, i) => (
             <tr key={i} className="align-top">
-              <td className="px-4 py-3 font-medium text-slate-900">{r.risk}</td>
-              <td className="px-4 py-3 text-slate-700">{r.category}</td>
+              <td className="px-4 py-3 font-medium text-neutral-50">{r.risk}</td>
+              <td className="px-4 py-3 text-neutral-300">{r.category}</td>
               <td className="px-4 py-3">
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${levelClass(r.impact)}`}>{r.impact}</span>
               </td>
               <td className="px-4 py-3">
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${levelClass(r.likelihood)}`}>{r.likelihood}</span>
               </td>
-              <td className="px-4 py-3 text-slate-700">{r.mitigation}</td>
+              <td className="px-4 py-3 text-neutral-300">{r.mitigation}</td>
             </tr>
           ))}
         </tbody>
@@ -519,16 +519,16 @@ function RiskTable({ risks }) {
 function priorityClass(p) {
   if (p === "P0") return "bg-red-100 text-red-800";
   if (p === "P1") return "bg-amber-100 text-amber-800";
-  if (p === "P2") return "bg-slate-100 text-slate-700";
-  return "bg-slate-100 text-slate-700";
+  if (p === "P2") return "bg-neutral-800 text-neutral-300";
+  return "bg-neutral-800 text-neutral-300";
 }
 
 function BacklogTable({ items }) {
-  if (!items.length) return <p className="text-sm text-slate-500">No backlog items.</p>;
+  if (!items.length) return <p className="text-sm text-neutral-500">No backlog items.</p>;
   return (
-    <div className="overflow-hidden rounded-md border border-slate-200">
+    <div className="overflow-hidden rounded-md border border-neutral-800">
       <table className="w-full text-left text-sm">
-        <thead className="bg-slate-900 text-white">
+        <thead className="bg-neutral-950 text-white">
           <tr>
             <th className="px-4 py-3 font-semibold">ID</th>
             <th className="px-4 py-3 font-semibold">Title</th>
@@ -540,13 +540,13 @@ function BacklogTable({ items }) {
         <tbody className="divide-y divide-slate-100">
           {items.map((b, i) => (
             <tr key={i} className="align-top">
-              <td className="px-4 py-3 font-mono-alt text-xs text-slate-500">{b.id}</td>
-              <td className="px-4 py-3 font-medium text-slate-900">{b.title}</td>
+              <td className="px-4 py-3 font-mono-alt text-xs text-neutral-500">{b.id}</td>
+              <td className="px-4 py-3 font-medium text-neutral-50">{b.title}</td>
               <td className="px-4 py-3">
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${priorityClass(b.priority)}`}>{b.priority}</span>
               </td>
-              <td className="px-4 py-3 text-slate-700">{b.effort}</td>
-              <td className="px-4 py-3 text-slate-700">{b.description}</td>
+              <td className="px-4 py-3 text-neutral-300">{b.effort}</td>
+              <td className="px-4 py-3 text-neutral-300">{b.description}</td>
             </tr>
           ))}
         </tbody>
@@ -556,19 +556,19 @@ function BacklogTable({ items }) {
 }
 
 function Roadmap({ phases }) {
-  if (!phases.length) return <p className="text-sm text-slate-500">No roadmap yet.</p>;
+  if (!phases.length) return <p className="text-sm text-neutral-500">No roadmap yet.</p>;
   return (
-    <ol className="relative space-y-6 border-l-2 border-slate-200 pl-6">
+    <ol className="relative space-y-6 border-l-2 border-neutral-800 pl-6">
       {phases.map((p, i) => (
         <li key={i} className="relative">
-          <span className="absolute -left-[31px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
+          <span className="absolute -left-[31px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-950 text-[10px] font-bold text-white">
             {i + 1}
           </span>
           <div className="flex flex-wrap items-baseline gap-3">
-            <h4 className="font-display text-lg font-semibold tracking-tight text-slate-900">{p.phase}</h4>
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{p.timeline}</span>
+            <h4 className="font-display text-lg font-semibold tracking-tight text-neutral-50">{p.phase}</h4>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">{p.timeline}</span>
           </div>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-300">
             {(p.milestones || []).map((m, j) => <li key={j}>{m}</li>)}
           </ul>
         </li>
@@ -578,18 +578,18 @@ function Roadmap({ phases }) {
 }
 
 function Recommendations({ recs }) {
-  if (!recs.length) return <p className="text-sm text-slate-500">No recommendations yet.</p>;
+  if (!recs.length) return <p className="text-sm text-neutral-500">No recommendations yet.</p>;
   return (
     <ol className="space-y-3">
       {recs.map((r, i) => (
-        <li key={i} className="flex items-start gap-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+        <li key={i} className="flex items-start gap-4 rounded-md border border-neutral-800 bg-neutral-900 p-4">
           <span className={`mt-0.5 inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded-full px-2 text-xs font-bold ${priorityClass(r.priority)}`}>
             {r.priority}
           </span>
           <div>
-            <div className="font-display text-base font-semibold text-slate-900">{r.action}</div>
-            <div className="mt-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{r.timeline}</div>
-            <p className="mt-1 text-sm text-slate-600">{r.rationale}</p>
+            <div className="font-display text-base font-semibold text-neutral-50">{r.action}</div>
+            <div className="mt-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">{r.timeline}</div>
+            <p className="mt-1 text-sm text-neutral-400">{r.rationale}</p>
           </div>
         </li>
       ))}

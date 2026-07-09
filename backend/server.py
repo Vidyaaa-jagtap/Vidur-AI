@@ -31,7 +31,9 @@ load_dotenv(ROOT_DIR / ".env")
 # Env-dependent imports must come after load_dotenv.
 from ai_service import generate_blueprint  # noqa: E402
 from agents import ALL_AGENTS  # noqa: E402
+from agents.base import AgentContext  # noqa: E402
 from chat_service import SUGGESTED_PROMPTS, chat as copilot_chat  # noqa: E402
+from demo_data import DEMO_BLUEPRINT, DEMO_META  # noqa: E402
 from pdf_service import build_pdf  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -235,6 +237,72 @@ async def download_pdf(blueprint_id: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---------------------------------------------------------------------------
+# Demo (no LLM calls) + Section refine
+# ---------------------------------------------------------------------------
+
+
+@api_router.post("/blueprint/demo", response_model=BlueprintRecord)
+async def create_demo_blueprint():
+    """Create a fully-populated demo blueprint without invoking Watsonx.
+
+    Lets users experience the full Results dashboard + Copilot flow without
+    configuring IBM credentials.
+    """
+    record = BlueprintRecord(**DEMO_META, blueprint=DEMO_BLUEPRINT)
+    doc = record.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    await db.blueprints.insert_one(doc)
+    return record
+
+
+class SectionRefineRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    instruction: str = Field("", max_length=1000)
+
+
+_AGENT_BY_KEY = {a.key: a for a in ALL_AGENTS}
+
+
+@api_router.post("/blueprint/{blueprint_id}/refine/{section}", response_model=BlueprintRecord)
+async def refine_section(blueprint_id: str, section: str, req: SectionRefineRequest):
+    """Regenerate one section using its dedicated agent.
+
+    The `instruction` field is optional plain-English guidance from the user.
+    """
+    if section not in _AGENT_BY_KEY:
+        raise HTTPException(status_code=400, detail=f"Unknown section '{section}'.")
+    doc = await db.blueprints.find_one({"id": blueprint_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Blueprint not found.")
+
+    ctx_idea = doc["startup_idea"]
+    if req.instruction.strip():
+        ctx_idea = f"{ctx_idea}\n\nRefine guidance: {req.instruction.strip()}"
+
+    ctx = AgentContext(
+        startup_name=doc["startup_name"],
+        startup_idea=ctx_idea,
+        industry=doc["industry"],
+        target_audience=doc["target_audience"],
+    )
+    try:
+        agent = _AGENT_BY_KEY[section]()
+        new_value = await agent.generate(ctx)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Section refine failed")
+        raise HTTPException(status_code=502, detail=f"Refine failed: {exc}") from exc
+
+    doc["blueprint"][section] = new_value
+    await db.blueprints.update_one(
+        {"id": blueprint_id},
+        {"$set": {f"blueprint.{section}": new_value}},
+    )
+    if isinstance(doc.get("created_at"), str):
+        doc["created_at"] = datetime.fromisoformat(doc["created_at"])
+    return BlueprintRecord(**doc)
 
 
 # ---------------------------------------------------------------------------

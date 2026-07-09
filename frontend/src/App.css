@@ -1,4 +1,1 @@
-/* Vidur AI — app-level overrides.
- * NOTE: do not center the .App container; keep left-aligned dense layouts.
- */
-.App { min-height: 100vh; background: #ffffff; }
+.App { min-height: 100vh; background: transparent; }

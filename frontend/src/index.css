@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,87 +7,143 @@
 html,
 body {
     margin: 0;
-    background-color: #ffffff;
-    color: #0f172a;
-    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(1200px 800px at 90% -10%, rgba(212, 175, 55, 0.08), transparent 60%),
+                radial-gradient(1000px 600px at -10% 40%, rgba(212, 175, 55, 0.05), transparent 60%),
+                #0a0a0a;
+    background-attachment: fixed;
+    color: #f5f5f0;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Fraunces', 'Times New Roman', serif;
+    font-optical-sizing: auto;
     letter-spacing: -0.02em;
 }
 
 .font-mono-alt { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-::selection { background: #0f172a; color: #ffffff; }
+::selection { background: #d4af37; color: #0a0a0a; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #262626; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #d4af37; }
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 222 47% 11%;
-        --card: 0 0% 100%;
-        --card-foreground: 222 47% 11%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222 47% 11%;
-        --primary: 222 47% 11%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 210 40% 96%;
-        --secondary-foreground: 222 47% 11%;
-        --muted: 210 40% 96%;
-        --muted-foreground: 215 16% 47%;
-        --accent: 217 91% 60%;
-        --accent-foreground: 0 0% 100%;
+        --background: 0 0% 4%;
+        --foreground: 45 25% 96%;
+        --card: 0 0% 7%;
+        --card-foreground: 45 25% 96%;
+        --popover: 0 0% 7%;
+        --popover-foreground: 45 25% 96%;
+        --primary: 43 65% 53%;
+        --primary-foreground: 0 0% 6%;
+        --secondary: 0 0% 12%;
+        --secondary-foreground: 45 25% 96%;
+        --muted: 0 0% 12%;
+        --muted-foreground: 0 0% 64%;
+        --accent: 43 65% 53%;
+        --accent-foreground: 0 0% 6%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 214 32% 91%;
-        --ring: 222 47% 11%;
-        --radius: 0.5rem;
+        --border: 0 0% 14%;
+        --input: 0 0% 14%;
+        --ring: 43 65% 53%;
+        --radius: 0.75rem;
     }
 }
 
 @layer base {
     * { @apply border-border; }
-    body { @apply bg-background text-foreground; }
+    body { @apply text-foreground; }
 }
 
-/* Custom utilities */
+/* ------ Vidur premium utilities ------ */
+
 .eyebrow {
-    font-family: 'IBM Plex Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: #2563eb;
+    color: #d4af37;
 }
 
-.grid-bg {
+.gold-text {
+    background: linear-gradient(135deg, #f5c542 0%, #d4af37 40%, #b8860b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gold-hairline {
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5), transparent);
+    height: 1px;
+    width: 100%;
+}
+
+.gold-border {
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.gold-btn {
+    background: linear-gradient(135deg, #f5c542 0%, #d4af37 100%);
+    color: #0a0a0a;
+    font-weight: 600;
+    box-shadow: 0 8px 30px -8px rgba(212, 175, 55, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.gold-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 40px -8px rgba(212, 175, 55, 0.55);
+}
+
+.grid-bg-dark {
     background-image:
-        linear-gradient(to right, rgba(15,23,42,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(15,23,42,0.05) 1px, transparent 1px);
-    background-size: 44px 44px;
+        linear-gradient(to right, rgba(212, 175, 55, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(212, 175, 55, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
 }
 
-.card-hover {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+.surface {
+    background: linear-gradient(180deg, #141414 0%, #0f0f0f 100%);
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
 }
-.card-hover:hover {
+
+.surface-hover {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.surface-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.15);
-    border-color: rgba(15, 23, 42, 0.25);
+    border-color: rgba(212, 175, 55, 0.35);
+    box-shadow: 0 20px 40px -20px rgba(212, 175, 55, 0.2);
 }
 
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.6s ease both; }
+.fade-up { animation: fadeUp 0.7s ease both; }
 .delay-1 { animation-delay: 0.08s; }
 .delay-2 { animation-delay: 0.16s; }
 .delay-3 { animation-delay: 0.24s; }
 .delay-4 { animation-delay: 0.32s; }
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.shimmer {
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+}
 
 @layer base {
     [data-debug-wrapper="true"] { display: contents !important; }

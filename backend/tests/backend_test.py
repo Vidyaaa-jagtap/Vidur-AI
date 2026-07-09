@@ -92,3 +92,62 @@ class TestBlueprintJobs:
         r = api.get(f"{BASE_URL}/api/blueprints")
         assert r.status_code == 200
         assert isinstance(r.json(), list)
+
+
+
+# ---- Demo blueprint + section refine ----
+class TestDemoAndRefine:
+    demo_id = None
+
+    def test_create_demo_blueprint(self, api):
+        r = api.post(f"{BASE_URL}/api/blueprint/demo")
+        assert r.status_code == 200, r.text
+        d = r.json()
+        assert "id" in d
+        assert d["startup_name"]
+        bp = d["blueprint"]
+        # Expect all 14 sections
+        expected_sections = [
+            "executive_summary", "problem_statement", "business_objectives",
+            "viability_score", "market_analysis", "competitive_analysis",
+            "ai_recommendations", "business_model_canvas", "swot_analysis",
+            "risk_analysis", "functional_requirements", "user_stories",
+            "product_backlog", "development_roadmap",
+        ]
+        for s in expected_sections:
+            assert s in bp, f"Missing section {s} in demo blueprint"
+        TestDemoAndRefine.demo_id = d["id"]
+
+    def test_fetch_demo_blueprint(self, api):
+        assert TestDemoAndRefine.demo_id
+        r = api.get(f"{BASE_URL}/api/blueprint/{TestDemoAndRefine.demo_id}")
+        assert r.status_code == 200
+        d = r.json()
+        assert d["id"] == TestDemoAndRefine.demo_id
+        assert "executive_summary" in d["blueprint"]
+
+    def test_refine_unknown_section_400(self, api):
+        assert TestDemoAndRefine.demo_id
+        r = api.post(
+            f"{BASE_URL}/api/blueprint/{TestDemoAndRefine.demo_id}/refine/UNKNOWN_SECTION",
+            json={"instruction": "test"},
+        )
+        assert r.status_code == 400
+        assert "Unknown section" in r.json().get("detail", "")
+
+    def test_refine_valid_section_502_when_no_watsonx(self, api):
+        assert TestDemoAndRefine.demo_id
+        r = api.post(
+            f"{BASE_URL}/api/blueprint/{TestDemoAndRefine.demo_id}/refine/problem_statement",
+            json={"instruction": "Make it punchier"},
+        )
+        # Backend returns 502 with JSON detail; but the tenacity retries
+        # inside watsonx_client may push the request past Cloudflare's edge
+        # timeout, yielding an HTML 502 from CF. Either way status must be 502.
+        assert r.status_code == 502, f"Expected 502 got {r.status_code}"
+        try:
+            detail = r.json().get("detail", "")
+            assert "Refine failed" in detail or "WATSONX" in detail.upper()
+        except ValueError:
+            # Cloudflare HTML 502 gateway timeout — acceptable but flag it.
+            assert "Bad gateway" in r.text or "502" in r.text
