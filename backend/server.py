@@ -31,6 +31,7 @@ load_dotenv(ROOT_DIR / ".env")
 # Env-dependent imports must come after load_dotenv.
 from ai_service import generate_blueprint  # noqa: E402
 from agents import ALL_AGENTS  # noqa: E402
+from chat_service import SUGGESTED_PROMPTS, chat as copilot_chat  # noqa: E402
 from pdf_service import build_pdf  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -234,6 +235,65 @@ async def download_pdf(blueprint_id: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---------------------------------------------------------------------------
+# Copilot chat
+# ---------------------------------------------------------------------------
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(..., pattern="^(user|assistant)$")
+    content: str = Field(..., min_length=1, max_length=6000)
+
+
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    message: str = Field(..., min_length=1, max_length=4000)
+
+
+class ChatReply(BaseModel):
+    reply: str
+    suggested_prompts: List[str] = Field(default_factory=list)
+
+
+@api_router.get("/blueprint/{blueprint_id}/chat/history", response_model=List[ChatMessage])
+async def get_chat_history(blueprint_id: str):
+    doc = await db.blueprint_chats.find_one({"blueprint_id": blueprint_id}, {"_id": 0})
+    if not doc:
+        return []
+    return [ChatMessage(**m) for m in doc.get("messages", [])]
+
+
+@api_router.get("/copilot/suggested-prompts", response_model=List[str])
+async def get_suggested_prompts():
+    return SUGGESTED_PROMPTS
+
+
+@api_router.post("/blueprint/{blueprint_id}/chat", response_model=ChatReply)
+async def chat_with_copilot(blueprint_id: str, req: ChatRequest):
+    bp = await db.blueprints.find_one({"id": blueprint_id}, {"_id": 0})
+    if not bp:
+        raise HTTPException(status_code=404, detail="Blueprint not found.")
+
+    convo = await db.blueprint_chats.find_one({"blueprint_id": blueprint_id}, {"_id": 0})
+    history: List[Dict[str, str]] = convo["messages"] if convo else []
+
+    try:
+        reply = await copilot_chat(bp, history, req.message)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Copilot chat failed")
+        raise HTTPException(status_code=502, detail=f"Copilot error: {exc}") from exc
+
+    now = datetime.now(timezone.utc).isoformat()
+    history.append({"role": "user", "content": req.message, "at": now})
+    history.append({"role": "assistant", "content": reply, "at": now})
+    await db.blueprint_chats.update_one(
+        {"blueprint_id": blueprint_id},
+        {"$set": {"blueprint_id": blueprint_id, "messages": history, "updated_at": now}},
+        upsert=True,
+    )
+    return ChatReply(reply=reply, suggested_prompts=SUGGESTED_PROMPTS[:5])
 
 
 app.include_router(api_router)

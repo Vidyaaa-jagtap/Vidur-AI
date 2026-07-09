@@ -9,16 +9,20 @@ export default function Navbar() {
   return (
     <header
       data-testid="navbar"
-      className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl"
+      className="sticky top-0 z-40 w-full border-b border-slate-200/70 bg-white/80 backdrop-blur-xl"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
-        <Link to="/" data-testid="nav-logo" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-900 text-white transition-transform group-hover:-translate-y-0.5">
+        <Link to="/" data-testid="nav-logo" className="group flex items-center gap-2.5">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-slate-900 to-slate-700 text-white transition-transform group-hover:-translate-y-0.5">
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="leading-none">
-            <div className="font-display text-lg font-bold tracking-tight text-slate-900">Vidur AI</div>
-            <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">IBM watsonx.ai · Business Analyst Copilot</div>
+            <div className="font-display text-lg font-bold tracking-tight text-slate-900">
+              Vidur <span className="text-blue-600">AI</span>
+            </div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-[0.24em] text-slate-500">
+              AI Business Analyst Copilot
+            </div>
           </div>
         </Link>
 
@@ -37,7 +41,7 @@ export default function Navbar() {
             data-testid="nav-features"
             className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
           >
-            Features
+            Product
           </a>
           <a
             href="#how"
@@ -51,9 +55,9 @@ export default function Navbar() {
         <Button
           data-testid="nav-cta"
           onClick={() => navigate("/create")}
-          className="rounded-full bg-slate-900 px-5 text-white hover:bg-slate-800"
+          className="rounded-full bg-slate-900 px-5 text-white shadow-sm hover:bg-slate-800"
         >
-          Generate Blueprint
+          Start free
         </Button>
       </div>
     </header>

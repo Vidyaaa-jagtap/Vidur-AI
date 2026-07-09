@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import Home from "./pages/Home";
 import Create from "./pages/Create";
 import Results from "./pages/Results";
+import Copilot from "./pages/Copilot";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<Create />} />
           <Route path="/results/:id" element={<Results />} />
+          <Route path="/copilot/:id" element={<Copilot />} />
         </Routes>
         <Footer />
         <Toaster position="top-right" richColors closeButton />

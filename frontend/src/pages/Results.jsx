@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Download, ArrowLeft, Loader2, AlertTriangle, ShieldCheck, Target, Layers,
-  ListChecks, Users2, ClipboardList, Route, Building2, LineChart, TrendingUp, Trophy, Lightbulb,
+  ListChecks, Users2, ClipboardList, Route, Building2, LineChart, TrendingUp,
+  Trophy, Lightbulb, MessageSquare, ScrollText,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { fetchBlueprint, pdfUrl } from "../lib/api";
@@ -79,17 +80,36 @@ export default function Results() {
                 <span>Target: <span className="text-slate-700">{record.target_audience}</span></span>
               </div>
             </div>
-            <Button
-              onClick={download}
-              data-testid="download-pdf"
-              className="h-11 rounded-full bg-slate-900 px-6 text-white hover:bg-slate-800"
-            >
-              <Download className="mr-2 h-4 w-4" /> Download PDF Report
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link to={`/copilot/${id}`}>
+                <Button
+                  data-testid="open-copilot"
+                  className="h-11 rounded-full border border-slate-300 bg-white px-5 text-slate-900 shadow-sm hover:bg-slate-50"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" /> Ask Copilot
+                </Button>
+              </Link>
+              <Button
+                onClick={download}
+                data-testid="download-pdf"
+                className="h-11 rounded-full bg-slate-900 px-6 text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800"
+              >
+                <Download className="mr-2 h-4 w-4" /> Download PDF
+              </Button>
+            </div>
           </div>
           <p className="mt-6 max-w-3xl text-slate-600">{record.startup_idea}</p>
         </div>
       </section>
+
+      {/* Executive Summary */}
+      {bp.executive_summary && (
+        <section data-testid="section-executive" className="border-b border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50/40">
+          <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
+            <ExecutiveSummary es={bp.executive_summary} />
+          </div>
+        </section>
+      )}
 
       {/* Viability hero */}
       {vs.overall !== undefined && (
@@ -165,13 +185,21 @@ export default function Results() {
             <Recommendations recs={bp.ai_recommendations || []} />
           </Section>
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-2">
+            <Link to={`/copilot/${id}`}>
+              <Button
+                data-testid="open-copilot-bottom"
+                className="h-11 rounded-full border border-slate-300 bg-white px-5 text-slate-900 shadow-sm hover:bg-slate-50"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" /> Ask the Copilot
+              </Button>
+            </Link>
             <Button
               onClick={download}
               data-testid="download-pdf-bottom"
-              className="h-11 rounded-full bg-blue-600 px-6 text-white hover:bg-blue-700"
+              className="h-11 rounded-full bg-blue-600 px-6 text-white shadow-md shadow-blue-600/20 hover:bg-blue-700"
             >
-              <Download className="mr-2 h-4 w-4" /> Download Full PDF Report
+              <Download className="mr-2 h-4 w-4" /> Download Full PDF
             </Button>
           </div>
         </div>
@@ -215,6 +243,42 @@ function BulletList({ items }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/* ---------- Executive Summary ---------- */
+
+function ExecutiveSummary({ es }) {
+  const metrics = es.key_metrics || [];
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          <div className="eyebrow flex items-center gap-2">
+            <ScrollText className="h-3.5 w-3.5" /> Executive Summary
+          </div>
+          <h2 className="mt-3 font-display text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
+            {es.headline}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-slate-700">{es.thesis}</p>
+          {es.call_to_action && (
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+              <Lightbulb className="h-3.5 w-3.5" /> {es.call_to_action}
+            </div>
+          )}
+        </div>
+        <div className="lg:col-span-4">
+          <div className="grid grid-cols-2 gap-3">
+            {metrics.slice(0, 6).map((m, i) => (
+              <div key={i} className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-600">{m.label}</div>
+                <div className="mt-1 font-display text-lg font-bold text-slate-900">{m.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

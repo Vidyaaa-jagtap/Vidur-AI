@@ -1,10 +1,9 @@
 """Vidur AI Watsonx agents package.
 
-Each agent generates ONE section of the blueprint using its own focused
-prompt. This avoids Watsonx per-request token limits and lets us run
-multiple agents concurrently.
+Each agent generates ONE section of the blueprint using its own focused prompt.
 """
 from .base import BaseAgent, AgentContext  # noqa: F401
+from .executive import ExecutiveAgent  # noqa: F401
 from .problem import ProblemAgent  # noqa: F401
 from .objectives import ObjectivesAgent  # noqa: F401
 from .canvas import CanvasAgent  # noqa: F401
@@ -20,6 +19,7 @@ from .competitive import CompetitiveAgent  # noqa: F401
 from .recommendations import RecommendationsAgent  # noqa: F401
 
 ALL_AGENTS = [
+    ExecutiveAgent,
     ProblemAgent,
     ObjectivesAgent,
     ViabilityAgent,

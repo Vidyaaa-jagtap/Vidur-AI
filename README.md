@@ -12,9 +12,9 @@
 
 ## Overview
 
-Vidur AI is a full-stack GenAI web application that converts a raw startup idea into a **structured, investor-ready business blueprint**. It runs entirely on **IBM watsonx.ai** — no OpenAI, Anthropic, Gemini, or Emergent APIs — using a multi-agent orchestration pattern that avoids Watsonx token limits by having each of thirteen specialised agents own exactly one section of the report.
+Vidur AI is a full-stack GenAI web application that converts a raw startup idea into a **structured, investor-ready business blueprint**. It runs entirely on **IBM watsonx.ai** using a multi-agent orchestration pattern that avoids Watsonx token limits by having each of fourteen specialised agents own exactly one section of the report.
 
-Built for the **IBM AICTE Edunet Internship Program**.
+Vidur AI positions itself as the **AI Business Analyst Copilot for Startup Planning, Product Strategy, and Venture Validation** — built for founders, operators, incubators, consultants, and investors.
 
 ## Sections generated
 
@@ -207,17 +207,16 @@ Every LLM response is passed through `json_utils.parse_json`, which:
 
 If parsing still fails, the agent retries the prompt with a targeted error hint, up to two more times.
 
-## IBM Evaluation Criteria — how Vidur AI scores
+## Why founders and operators pay for this
 
-| Criterion | How Vidur AI addresses it |
-|-----------|---------------------------|
-| **IBM Cloud Platform usage** | Sole LLM provider is IBM watsonx.ai. Region-configurable (defaults to `eu-gb`). Uses official `ibm-watsonx-ai` SDK. |
-| **Scalability** | Stateless FastAPI + Motor async Mongo. Bounded-concurrency agent orchestration. Background jobs so ingress timeouts don't matter. Ready to deploy behind IBM Code Engine or OpenShift. |
-| **Innovation** | Multi-agent Business Analyst Copilot with a proprietary viability score, market sizing (TAM/SAM/SOM), competitive teardown, and an AI recommendation engine — all backed by IBM Watsonx. |
-| **Social Impact** | Democratizes strategic-consulting-grade output for first-time and non-technical founders in India, Africa, and other emerging ecosystems — replaces $5k–$50k consulting engagements with a free tool. |
-| **Deployment Readiness** | Single `.env` for credentials, no hardcoded secrets, MongoDB via env var, `pip install` + `yarn install` and run. Docker-friendly. |
-| **Commercial Viability** | Freemium: 1 blueprint free, paid tiers for saved history, team plans, and accelerator cohort licensing. |
-| **Future Scope** | Section-level "refine this" regeneration · Shareable public blueprint URLs · Notion/PPTX export · Watsonx.data grounding on live market data · Multi-language support · Founder-persona voice tuning. |
+| Pillar | How Vidur AI delivers |
+|--------|-----------------------|
+| **Enterprise-grade LLM** | Powered by IBM watsonx.ai. Region-configurable (defaults to `eu-gb`). Uses the official `ibm-watsonx-ai` SDK — production quality, not a hobby wrapper. |
+| **Scalability** | Stateless FastAPI + async Mongo. Bounded-concurrency agent orchestration. Background jobs so ingress timeouts don't matter. Deployable on IBM Code Engine, OpenShift, or any container platform. |
+| **Innovation** | Multi-agent Business Analyst Copilot with a proprietary viability score, market sizing (TAM/SAM/SOM), competitive teardown, an AI recommendation engine, and a **live Copilot chat** grounded in the generated blueprint. |
+| **Commercial Viability** | Freemium: 1 blueprint free, paid tiers for saved history, team plans, and accelerator cohort licensing. Target ICPs: solo founders, incubators, SME consultants, and VC scouts. |
+| **Deployment Readiness** | Single `.env` for credentials, no hardcoded secrets, `pip install` + `yarn install` and run. Docker-friendly. |
+| **Future Roadmap** | Section-level "refine this" regeneration · Shareable public blueprint URLs · Notion/PPTX export · watsonx.data grounding on live market data · Multi-language support · Founder-persona voice tuning. |
 
 ## License
 
